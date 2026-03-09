@@ -64,7 +64,6 @@ training_args = SFTConfig(
     max_steps=200,
     save_strategy="epoch",
     bf16=True,
-    max_seq_length=512,
 )
 
 # 6. Initialize the Trainer
