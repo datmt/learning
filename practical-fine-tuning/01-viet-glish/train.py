@@ -63,6 +63,7 @@ training_args = SFTConfig(
     logging_steps=5,
     max_steps=200,
     save_strategy="epoch",
+    save_total_limit=1,
     bf16=True,
 )
 
