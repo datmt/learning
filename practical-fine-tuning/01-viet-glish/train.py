@@ -3,6 +3,21 @@ from datasets import load_dataset
 from peft import LoraConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTTrainer, SFTConfig
+import torch.nn as nn
+
+# --- MONKEY PATCH FOR OLDER PYTORCH VERSIONS ---
+if not hasattr(nn.Module, "set_submodule"):
+
+    def set_submodule(self, target: str, module: nn.Module) -> None:
+        atoms = target.split(".")
+        name = atoms.pop(-1)
+        mod = self
+        for item in atoms:
+            mod = getattr(mod, item)
+        setattr(mod, name, module)
+
+    nn.Module.set_submodule = set_submodule
+# -----------------------------------------------
 
 # 1. Load Model and Tokenizer
 model_id = "Qwen/Qwen3.5-4B"
