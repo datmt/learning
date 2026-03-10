@@ -15,34 +15,6 @@ Or set environment variables:
 import argparse
 import os
 import sys
-import subprocess
-
-
-# Install dependencies FIRST before any imports
-def install_dependencies():
-    """Install required packages if not available"""
-    packages = {
-        "transformers": "transformers",
-        "accelerate": "accelerate",
-        "flask": "flask",
-        "torch": "torch",
-    }
-
-    missing = []
-    for package, pip_name in packages.items():
-        try:
-            __import__(package)
-        except ImportError:
-            missing.append(pip_name)
-
-    if missing:
-        print(f"📦 Installing missing packages: {', '.join(missing)}")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q"] + missing)
-        print("✅ Packages installed!")
-
-
-# Install dependencies before other imports
-install_dependencies()
 
 # Now import everything else
 from flask import Flask, request, jsonify
