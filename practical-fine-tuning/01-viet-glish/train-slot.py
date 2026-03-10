@@ -1,28 +1,35 @@
+import os
+import torch
 from unsloth import FastLanguageModel
 from datasets import load_dataset
 from trl import SFTTrainer
 from transformers import TrainingArguments
-from unsloth.chat_templates import get_chat_template
-import os
 
 # ==========================================
-# 1. CONFIGURATION
+# 1. ENVIRONMENT & SECRETS
 # ==========================================
-# Use the official base model you started with
-BASE_MODEL = "Qwen/Qwen3.5-4B"  # Change to your exact base model
-DATASET_PATH = "vietglish_train.jsonl"
-NEW_MODEL_REPO = "datmt24/qwen-3.5-4b-vietglish-unsloth"
+# Run 'export HF_TOKEN=hf_xxx' in your terminal before running this
 HF_TOKEN = os.getenv("HF_TOKEN")
-max_seq_length = 2048  # Adjust based on your GPU VRAM
-dtype = (
-    None  # Automatically detects if your GPU supports bfloat16 (RTX 3090/4090/A4000 do)
-)
-load_in_4bit = True  # Keeps VRAM usage very low during training
+if not HF_TOKEN:
+    raise ValueError(
+        "Missing HF_TOKEN! Please run 'export HF_TOKEN=your_token' in your terminal."
+    )
 
 # ==========================================
-# 2. LOAD MODEL & LORA ADAPTERS
+# 2. CONFIGURATION
 # ==========================================
-print("Loading Base Model...")
+BASE_MODEL = "Qwen/Qwen3.5-4B"
+DATASET_PATH = "vietglish_train.jsonl"  # Path to your file with the "text" column
+NEW_MODEL_REPO = "datmt24/qwen-3.5-4b-vietglish-unsloth"
+
+max_seq_length = 2048
+dtype = None  # Auto-detect (will use bf16 on your A40/3090)
+load_in_4bit = True
+
+# ==========================================
+# 3. LOAD MODEL & LORA ADAPTERS
+# ==========================================
+print("--- Loading Base Model ---")
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name=BASE_MODEL,
     max_seq_length=max_seq_length,
@@ -30,10 +37,9 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     load_in_4bit=load_in_4bit,
 )
 
-# Apply QLoRA - Unsloth handles the complex math and Triton kernels here
 model = FastLanguageModel.get_peft_model(
     model,
-    r=16,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+    r=16,
     target_modules=[
         "q_proj",
         "k_proj",
@@ -44,71 +50,60 @@ model = FastLanguageModel.get_peft_model(
         "down_proj",
     ],
     lora_alpha=16,
-    lora_dropout=0,  # Supports any, but = 0 is optimized
-    bias="none",  # Supports any, but = "none" is optimized
-    use_gradient_checkpointing="unsloth",  # 4x longer contexts, 2x faster
+    lora_dropout=0,
+    bias="none",
+    use_gradient_checkpointing="unsloth",
     random_state=3407,
 )
 
 # ==========================================
-# 3. FORMAT DATASET
+# 4. LOAD DATASET
 # ==========================================
-# Unsloth automatically handles the ChatML template that Qwen expects
-tokenizer = get_chat_template(
-    tokenizer,
-    chat_template="chatml",
-    mapping={
-        "role": "role",
-        "content": "content",
-        "user": "user",
-        "assistant": "assistant",
-    },
-)
-
-print("Loading and formatting dataset...")
-# Assuming your dataset is a JSONL file with a "conversations" array
+print("--- Loading Dataset ---")
 dataset = load_dataset("json", data_files={"train": DATASET_PATH}, split="train")
+
+# Check if "text" column exists to avoid KeyError
+if "text" not in dataset.column_names:
+    raise KeyError(f"Expected 'text' column, but found: {dataset.column_names}")
+
 # ==========================================
-# 4. TRAIN THE MODEL
+# 5. TRAIN THE MODEL
 # ==========================================
+print("--- Starting Training ---")
 trainer = SFTTrainer(
     model=model,
     tokenizer=tokenizer,
     train_dataset=dataset,
-    dataset_text_field="text",
+    dataset_text_field="text",  # Points to your pre-formatted ChatML strings
     max_seq_length=max_seq_length,
     dataset_num_proc=2,
-    packing=False,  # Can make training 5x faster for short sequences
     args=TrainingArguments(
         per_device_train_batch_size=2,
         gradient_accumulation_steps=4,
         warmup_steps=5,
-        max_steps=60,  # Increase this for your actual full training run!
+        max_steps=60,  # Increase this for your full training run
         learning_rate=2e-4,
-        fp16=not FastLanguageModel.is_bfloat16_supported(),
-        bf16=FastLanguageModel.is_bfloat16_supported(),
+        fp16=not torch.cuda.is_bf16_supported(),
+        bf16=torch.cuda.is_bf16_supported(),
         logging_steps=1,
         optim="adamw_8bit",
         weight_decay=0.01,
         lr_scheduler_type="linear",
         seed=3407,
         output_dir="outputs",
+        report_to="none",  # Prevents unwanted wandb/tensorboard popups
     ),
 )
 
-print("Starting training...")
-trainer_stats = trainer.train()
+trainer.train()
 
 # ==========================================
-# 5. THE MAGIC VLLM EXPORT
+# 6. EXPORT & PUSH (The vLLM Fix)
 # ==========================================
-print("Pushing merged model to Hugging Face for vLLM compatibility...")
-
-# THIS is the line that solves all the vLLM config nightmare bugs.
-# `merged_16bit` forces Unsloth to fuse the adapters into the base model
-# and sanitize the config.json for production deployment.
+print("--- Merging and Pushing to Hub ---")
+# This creates the repo, merges LoRA into 16bit, and cleans the config.json
 model.push_to_hub_merged(
-    NEW_MODEL_REPO, tokenizer, save_method="merged_16bit", token=HF_TOKEN
+    NEW_MODEL_REPO, tokenizer, save_method="merged_16bit", token=HF_TOKEN, private=True
 )
 
-print("Done! Your model is ready for vLLM.")
+print(f"Success! Model pushed to https://huggingface.co/{NEW_MODEL_REPO}")
