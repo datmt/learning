@@ -66,9 +66,39 @@ def load_model(model_id, hf_token, device, torch_dtype):
         print("✅ LoRA model loaded and merged!")
     else:
         print(f"📥 Loading full model: {model_id}")
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id, device_map=device, torch_dtype=torch_dtype, trust_remote_code=True
-        )
+        try:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                device_map=device,
+                torch_dtype=torch_dtype,
+                trust_remote_code=True,  # Important for Qwen3.5
+            )
+        except Exception as e:
+            print(f"⚠️  Standard loading failed, trying with auto_map...")
+            # Force download config and check for auto_map
+            from huggingface_hub import hf_hub_download
+
+            config_path = hf_hub_download(
+                repo_id=model_id, filename="config.json", token=hf_token
+            )
+
+            with open(config_path, "r") as f:
+                config = json.load(f)
+
+            # If it has auto_map, we need trust_remote_code
+            if "auto_map" in config:
+                print("Found auto_map in config, enabling trust_remote_code...")
+                model = AutoModelForCausalLM.from_pretrained(
+                    model_id,
+                    device_map=device,
+                    torch_dtype=torch_dtype,
+                    trust_remote_code=True,
+                    # Add this to force using the modeling code from the repo
+                    code_revision="main",
+                )
+            else:
+                raise e
+
         print("✅ Full model loaded!")
 
     # Load tokenizer
