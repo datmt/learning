@@ -11,29 +11,7 @@ Usage:
 import argparse
 import os
 import sys
-import subprocess
 import json
-
-
-# Check dependencies
-def check_dependencies():
-    """Check if required packages are available"""
-    missing = []
-    for package in ["transformers", "accelerate", "flask", "torch", "peft"]:
-        try:
-            __import__(package)
-        except ImportError:
-            missing.append(package)
-
-    if missing:
-        print(f"❌ Missing required packages: {', '.join(missing)}")
-        print("\nPlease install them:")
-        print(f"  pip install {' '.join(missing)}")
-        sys.exit(1)
-
-
-check_dependencies()
-
 from flask import Flask, request, jsonify
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
