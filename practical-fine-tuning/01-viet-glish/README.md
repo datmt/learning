@@ -57,3 +57,25 @@ export HF_TOKEN=hf_your_token_here
 ./quick_push.sh
 ```
 
+
+## Run model after push 
+
+```bash 
+export HF_TOKEN=hf_your_token_here
+export MODEL_ID=datmt24/qwen-3.5-4b-vietglish-qlora
+python run_model_server.py
+
+```
+
+### send chat message
+```bash 
+curl -X POST http://localhost:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "tôi mời bạn uống gì nhé. Cà phê ở đây rất ngon.",
+    "max_tokens": 256,
+    "temperature": 0.7
+  }'
+
+```
+
