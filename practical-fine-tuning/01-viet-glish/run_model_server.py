@@ -2,23 +2,102 @@
 """
 RunPod Model Server
 Runs your fine-tuned model with a simple API
+Automatically detects if model is a LoRA adapter or full model
 
 Usage:
     python run_model_server.py --model-id datmt24/qwen-3.5-4b-vietglish-qlora --hf-token hf_xxx
-
-Or set environment variables:
-    export HF_TOKEN=hf_xxx
-    export MODEL_ID=datmt24/qwen-3.5-4b-vietglish-qlora
-    python run_model_server.py
 """
 
 import argparse
 import os
 import sys
+import subprocess
+import json
 
-# Now import everything else
+
+# Check dependencies
+def check_dependencies():
+    """Check if required packages are available"""
+    missing = []
+    for package in ["transformers", "accelerate", "flask", "torch", "peft"]:
+        try:
+            __import__(package)
+        except ImportError:
+            missing.append(package)
+
+    if missing:
+        print(f"❌ Missing required packages: {', '.join(missing)}")
+        print("\nPlease install them:")
+        print(f"  pip install {' '.join(missing)}")
+        sys.exit(1)
+
+
+check_dependencies()
+
 from flask import Flask, request, jsonify
 import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import hf_hub_download
+from peft import PeftModel
+
+
+def is_lora_adapter(model_id, token=None):
+    """Check if the model is a LoRA adapter"""
+    try:
+        # Try to download adapter_config.json
+        adapter_config_path = hf_hub_download(
+            repo_id=model_id, filename="adapter_config.json", token=token
+        )
+        with open(adapter_config_path, "r") as f:
+            config = json.load(f)
+
+        base_model = config.get("base_model_name_or_path")
+        return True, base_model
+    except:
+        return False, None
+
+
+def load_model(model_id, hf_token, device, torch_dtype):
+    """Load model - handles both LoRA adapters and full models"""
+
+    # Check if it's a LoRA adapter
+    is_lora, base_model_id = is_lora_adapter(model_id, hf_token)
+
+    if is_lora:
+        print(f"🔍 Detected LoRA adapter!")
+        print(f"   Base model: {base_model_id}")
+        print(f"   LoRA adapter: {model_id}")
+
+        # Load base model
+        print(f"\n📥 Loading base model: {base_model_id}")
+        base_model = AutoModelForCausalLM.from_pretrained(
+            base_model_id,
+            device_map=device,
+            torch_dtype=torch_dtype,
+            trust_remote_code=True,
+        )
+
+        # Load LoRA adapter
+        print(f"📥 Loading LoRA adapter: {model_id}")
+        model = PeftModel.from_pretrained(base_model, model_id)
+
+        # Merge LoRA weights for faster inference
+        print("🔄 Merging LoRA weights for faster inference...")
+        model = model.merge_and_unload()
+
+        print("✅ LoRA model loaded and merged!")
+    else:
+        print(f"📥 Loading full model: {model_id}")
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id, device_map=device, torch_dtype=torch_dtype, trust_remote_code=True
+        )
+        print("✅ Full model loaded!")
+
+    # Load tokenizer
+    print(f"📥 Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+
+    return model, tokenizer
 
 
 def main():
@@ -96,12 +175,6 @@ def main():
         login(token=hf_token)
         print("✅ Logged in successfully")
 
-    # Load model
-    print(f"\n📥 Loading model: {model_id}")
-    print("This may take a few minutes...")
-
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-
     # Determine dtype
     dtype_map = {
         "bfloat16": torch.bfloat16,
@@ -110,17 +183,17 @@ def main():
     }
     torch_dtype = dtype_map.get(args.dtype, torch.bfloat16)
 
+    # Load model (handles both LoRA and full models)
+    print(f"\n📥 Loading model: {model_id}")
+    print("This may take a few minutes...")
+
     try:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            device_map=args.device,
-            torch_dtype=torch_dtype,
-            trust_remote_code=True,
-        )
-        tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
-        print("✅ Model loaded successfully!")
+        model, tokenizer = load_model(model_id, hf_token, args.device, torch_dtype)
     except Exception as e:
         print(f"❌ Error loading model: {e}")
+        import traceback
+
+        traceback.print_exc()
         sys.exit(1)
 
     # Check GPU
@@ -161,16 +234,6 @@ def main():
 
     @app.route("/generate", methods=["POST"])
     def generate():
-        """
-        Request body:
-        {
-            "prompt": "Your prompt here",
-            "max_tokens": 256,
-            "temperature": 0.7,
-            "top_p": 0.9,
-            "top_k": 50
-        }
-        """
         try:
             data = request.json
             if not data or "prompt" not in data:
@@ -182,10 +245,8 @@ def main():
             top_p = data.get("top_p", 0.9)
             top_k = data.get("top_k", 50)
 
-            # Tokenize
             inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
-            # Generate
             outputs = model.generate(
                 **inputs,
                 max_new_tokens=min(max_tokens, args.max_tokens),
@@ -211,18 +272,6 @@ def main():
 
     @app.route("/chat", methods=["POST"])
     def chat():
-        """
-        Request body:
-        {
-            "message": "Your message here",
-            "max_tokens": 256,
-            "temperature": 0.7,
-            "history": [  // optional
-                {"role": "user", "content": "previous message"},
-                {"role": "assistant", "content": "previous response"}
-            ]
-        }
-        """
         try:
             data = request.json
             if not data or "message" not in data:
@@ -234,18 +283,14 @@ def main():
             top_p = data.get("top_p", 0.9)
             history = data.get("history", [])
 
-            # Build conversation
             messages = history + [{"role": "user", "content": message}]
 
-            # Format with chat template
             text = tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
 
-            # Tokenize
             inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-            # Generate
             outputs = model.generate(
                 **inputs,
                 max_new_tokens=min(max_tokens, args.max_tokens),
@@ -260,7 +305,6 @@ def main():
             # Extract assistant response
             if "assistant\n" in response or "assistant" in response:
                 response = response.split("assistant")[-1].strip()
-                # Remove any trailing special tokens
                 response = (
                     response.replace("<|im_end|>", "")
                     .replace("<|endoftext|>", "")
@@ -278,7 +322,6 @@ def main():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
-    # Start server
     print("\n" + "=" * 60)
     print(f"🚀 Server starting on http://{args.host}:{args.port}")
     print("=" * 60)
