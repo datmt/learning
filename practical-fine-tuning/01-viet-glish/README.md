@@ -79,3 +79,18 @@ curl -X POST http://localhost:8000/generate \
 
 ```
 
+
+### send chat message with history
+```bash 
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "còn món ăn thì sao?",
+    "history": [
+      {"role": "user", "content": "tôi mời bạn uống gì nhé"},
+      {"role": "assistant", "content": "Cảm ơn bạn! I would love some coffee."}
+    ],
+    "max_tokens": 256
+  }'
+
+```
