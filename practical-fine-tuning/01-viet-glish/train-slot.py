@@ -3,6 +3,7 @@ from datasets import load_dataset
 from trl import SFTTrainer
 from transformers import TrainingArguments
 from unsloth.chat_templates import get_chat_template
+import os
 
 # ==========================================
 # 1. CONFIGURATION
@@ -11,8 +12,7 @@ from unsloth.chat_templates import get_chat_template
 BASE_MODEL = "Qwen/Qwen3.5-4B"  # Change to your exact base model
 DATASET_PATH = "vietglish_train.jsonl"
 NEW_MODEL_REPO = "datmt24/qwen-3.5-4b-vietglish-unsloth"
-HF_TOKEN = ""  # Put your token here so it can push
-
+HF_TOKEN = os.getenv("HF_TOKEN")
 max_seq_length = 2048  # Adjust based on your GPU VRAM
 dtype = (
     None  # Automatically detects if your GPU supports bfloat16 (RTX 3090/4090/A4000 do)
