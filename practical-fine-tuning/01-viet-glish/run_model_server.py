@@ -15,20 +15,38 @@ Or set environment variables:
 import argparse
 import os
 import sys
-from flask import Flask, request, jsonify
-import torch
+import subprocess
 
 
+# Install dependencies FIRST before any imports
 def install_dependencies():
     """Install required packages if not available"""
-    try:
-        import transformers
-        import accelerate
-        import flask
-    except ImportError:
-        print("📦 Installing required packages...")
-        os.system("pip install -q transformers accelerate flask")
+    packages = {
+        "transformers": "transformers",
+        "accelerate": "accelerate",
+        "flask": "flask",
+        "torch": "torch",
+    }
+
+    missing = []
+    for package, pip_name in packages.items():
+        try:
+            __import__(package)
+        except ImportError:
+            missing.append(pip_name)
+
+    if missing:
+        print(f"📦 Installing missing packages: {', '.join(missing)}")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q"] + missing)
         print("✅ Packages installed!")
+
+
+# Install dependencies before other imports
+install_dependencies()
+
+# Now import everything else
+from flask import Flask, request, jsonify
+import torch
 
 
 def main():
@@ -97,9 +115,6 @@ def main():
     print(f"Device: {args.device}")
     print(f"Data type: {args.dtype}")
     print("=" * 60)
-
-    # Install dependencies if needed
-    install_dependencies()
 
     # Login to HuggingFace if token provided
     if hf_token:
