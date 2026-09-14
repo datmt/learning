@@ -1,0 +1,6 @@
+path: /home/dat/data/learning/cv-and-yolo/assets/toy_sports_dataset
+train: images/train
+val: images/val
+
+nc: 2
+names: ['player', 'ball']
