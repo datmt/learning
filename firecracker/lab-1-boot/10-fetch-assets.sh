@@ -6,25 +6,31 @@ ARCH="$(uname -m)"
 WORKDIR="${WORKDIR:-$HOME/fc-lab1}"
 mkdir -p "$WORKDIR" && cd "$WORKDIR"
 S3="https://s3.amazonaws.com/spec.ccfc.min"
+CURL_OPTS=(-fsSL --retry 8 --retry-delay 3 --retry-all-errors --connect-timeout 15 --max-time 60)
 
 echo "Listing CI artifacts for ${ARCH}..."
-CI_PREFIX=$(curl -fsSL "$S3?list-type=2&prefix=firecracker-ci/&delimiter=/" \
+CI_PREFIX=$(curl "${CURL_OPTS[@]}" "$S3?list-type=2&prefix=firecracker-ci/&delimiter=/" \
   | grep -oP '(?<=<Prefix>)firecracker-ci/[0-9]{8}-[^/]+/(?=</Prefix>)' \
   | sort | tail -1)
+[ -n "${CI_PREFIX:-}" ] || { echo "ERROR: empty CI prefix (S3 listing failed, re-run)"; exit 1; }
 echo "CI prefix: ${CI_PREFIX}"
 
-KKEY=$(curl -fsSL "$S3?list-type=2&prefix=${CI_PREFIX}${ARCH}/vmlinux-" \
+KKEY=$(curl "${CURL_OPTS[@]}" "$S3?list-type=2&prefix=${CI_PREFIX}${ARCH}/vmlinux-" \
   | grep -oP "(?<=<Key>)(${CI_PREFIX}${ARCH}/vmlinux-[0-9]+\\.[0-9]+\\.[0-9]{1,3})(?=</Key>)" \
   | sort -V | tail -1)
+[ -n "${KKEY:-}" ] || { echo "ERROR: empty kernel key (S3 listing failed, re-run)"; exit 1; }
 echo "Kernel key: ${KKEY}"
-wget -N "$S3/${KKEY}"
+wget --tries=10 --retry-connrefused --waitretry=3 --timeout=30 -N "$S3/${KKEY}"
 
-UKEY=$(curl -fsSL "$S3?list-type=2&prefix=${CI_PREFIX}${ARCH}/ubuntu-" \
+UKEY=$(curl "${CURL_OPTS[@]}" "$S3?list-type=2&prefix=${CI_PREFIX}${ARCH}/ubuntu-" \
   | grep -oP "(?<=<Key>)(${CI_PREFIX}${ARCH}/ubuntu-[0-9]+\\.[0-9]+\\.squashfs)(?=</Key>)" \
   | sort -V | tail -1)
+[ -n "${UKEY:-}" ] || { echo "ERROR: empty ubuntu key (S3 listing failed, re-run)"; exit 1; }
 UVER=$(basename "$UKEY" .squashfs | grep -oE '[0-9]+\.[0-9]+')
 echo "Ubuntu key: ${UKEY} (version ${UVER})"
-wget -O "ubuntu-${UVER}.squashfs.upstream" "$S3/$UKEY"
+# Resume-capable download for the ~108MB squashfs (wget -O restarts from 0 on retry)
+curl -fSL --retry 8 --retry-delay 3 --retry-all-errors --connect-timeout 15 -C - \
+  "$S3/$UKEY" -o "ubuntu-${UVER}.squashfs.upstream"
 
 if [ ! -f "ubuntu-${UVER}.id_rsa" ]; then
   rm -rf squashfs-root

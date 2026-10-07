@@ -234,6 +234,20 @@ crash-power-off (Lab 2 uses it deliberately).
 
 ## Troubleshooting
 
+- `20/21-boot` exit with `ls: cannot access 'vmlinux-*'` or
+  `ubuntu-*.ext4` → `10-fetch-assets.sh` hasn't completed yet. Boot scripts
+  need its outputs; finish `10` first (`ls ~/fc-lab1` should show
+  `vmlinux-*`, `ubuntu-*.ext4`, `ubuntu-*.id_rsa`).
+- `curl: (35) Recv failure: Connection reset by peer` in
+  `10-fetch-assets.sh` → transient S3/TLS reset. Script retries 8×; just
+  re-run — kernel download is `-N` (skips if complete) and squashfs uses
+  `curl -C -` (resumes the ~108 MB file).
+- `0-byte ubuntu-*.squashfs.upstream` after a killed run → re-run `10`
+  (resume continues from byte 0). Delete it only if `curl -C -` errors with
+  `416` / stale offset.
+- Scripts look hung at `sudo mkdir/mkfs/firecracker/iptables` → `sudo`
+  password prompt with no tty echo. Run in an interactive terminal and enter
+  your password; `sudo -n true` fails until then.
 - `KVM FAIL` (`[ -r /dev/kvm ]` fails) → lab shortcut
   `sudo chmod 666 /dev/kvm`, proper fix: add yourself to the `kvm` group
   or use `setfacl -m u:${USER}:rw /dev/kvm`. Without this, KVM ioctls are

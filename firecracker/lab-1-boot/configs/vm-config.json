@@ -1,12 +1,12 @@
 {
   "boot-source": {
-    "kernel_image_path": "/home/dat/data/labs/learning/firecracker-kernel/vmlinux",
+    "kernel_image_path": "/home/dat/fc-lab1/vmlinux-6.18.51",
     "boot_args": "console=ttyS0 reboot=k panic=1"
   },
   "drives": [
     {
       "drive_id": "rootfs",
-      "path_on_host": "/home/dat/data/labs/learning/firecracker-rootfs/ubuntu.ext4",
+      "path_on_host": "/home/dat/fc-lab1/ubuntu-24.04.ext4",
       "is_root_device": true,
       "is_read_only": false
     }
@@ -17,7 +17,7 @@
     "smt": false
   },
   "logger": {
-    "log_path": "/tmp/fc-1.log",
+    "log_path": "/home/dat/fc-lab1/fc-1.log",
     "level": "Debug",
     "show_level": true,
     "show_log_origin": true
