@@ -1,0 +1,25 @@
+{
+  "boot-source": {
+    "kernel_image_path": "/home/dat/data/labs/learning/firecracker-kernel/vmlinux",
+    "boot_args": "console=ttyS0 reboot=k panic=1"
+  },
+  "drives": [
+    {
+      "drive_id": "rootfs",
+      "path_on_host": "/home/dat/data/labs/learning/firecracker-rootfs/ubuntu.ext4",
+      "is_root_device": true,
+      "is_read_only": false
+    }
+  ],
+  "machine-config": {
+    "vcpu_count": 1,
+    "mem_size_mib": 256,
+    "smt": false
+  },
+  "logger": {
+    "log_path": "/tmp/fc-1.log",
+    "level": "Debug",
+    "show_level": true,
+    "show_log_origin": true
+  }
+}

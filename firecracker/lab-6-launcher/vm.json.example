@@ -1,0 +1,19 @@
+{
+  "boot-source": {
+    "kernel_image_path": "/root/fc-lab1/vmlinux-VERSION",
+    "boot_args": "console=ttyS0 reboot=k panic=1"
+  },
+  "drives": [
+    {
+      "drive_id": "rootfs",
+      "path_on_host": "/root/fc-lab1/ubuntu-22.04.ext4",
+      "is_root_device": true,
+      "is_read_only": false
+    }
+  ],
+  "machine-config": { "vcpu_count": 1, "mem_size_mib": 256 },
+  "network-interfaces": [
+    { "iface_id": "net1", "guest_mac": "06:00:AC:10:00:02", "host_dev_name": "tap0" }
+  ],
+  "logger": { "log_path": "/tmp/fc-cfg.log", "level": "Info", "show_level": true, "show_log_origin": true }
+}
