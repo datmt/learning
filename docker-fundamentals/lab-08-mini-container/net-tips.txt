@@ -1,0 +1,15 @@
+# Wiring network for mini-containers (optional advanced exercise)
+# mini.sh intentionally leaves the net namespace empty (like `docker --network none`).
+# To give it Internet like Docker does, in another terminal as root:
+#
+#   CTR_PID=<pid printed by: sudo ./mini.sh sleep 300 & echo $! then find child>
+#   ip link add veth-host type veth peer name veth-ctr
+#   ip link set veth-ctr netns <CTR_PID>      # needs the pid-ns leader's net ns via /proc/PID/ns/net
+#   ip addr add 10.99.0.1/24 dev veth-host && ip link set veth-host up
+#   nsenter -t <CTR_PID> -n ip addr add 10.99.0.2/24 dev veth-ctr
+#   nsenter -t <CTR_PID> -n ip link set veth-ctr up
+#   nsenter -t <CTR_PID> -n ip route add default via 10.99.0.1
+#   iptables -t nat -A POSTROUTING -s 10.99.0.0/24 -j MASQUERADE && echo 1 > /proc/sys/net/ipv4/ip_forward
+#
+# That is exactly Labs 5's veth + bridge + NAT, done by hand.
+# Easier variant: reuse Docker's bridge — attach your veth-host to docker0 instead of a new subnet.
