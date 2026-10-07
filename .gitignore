@@ -3,3 +3,6 @@ results/
 my_finetuned_model/
 .venv
 venv
+*tar.gz
+*tar
+*zip
