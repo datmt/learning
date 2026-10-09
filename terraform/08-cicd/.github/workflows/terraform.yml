@@ -1,0 +1,22 @@
+name: terraform-plan
+
+on:
+  pull_request:
+    paths:
+      - "01-first-resource/**" # TODO: point this at whatever folder you're testing
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 01-first-resource # TODO: match the path filter above
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      # TODO: terraform fmt -check
+      # TODO: terraform init
+      # TODO: terraform validate
+      # TODO: terraform plan
