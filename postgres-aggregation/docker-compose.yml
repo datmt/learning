@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pg-aggregation-lab
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reports
+      POSTGRES_USER: analyst
+      POSTGRES_PASSWORD: analyst_pw
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_agg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analyst -d reports"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg_agg_data:
