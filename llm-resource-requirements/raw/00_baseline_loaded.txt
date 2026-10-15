@@ -1,0 +1,11 @@
+Thu Oct 15 07:32:21 AM +07 2026
+MODEL            STATUS  GPU MEM   RAM (RSS)  CTX     SLOTS  PID
+qwen3.6-35b-a3b  loaded  24.5 GiB  10.1 GiB   131072  4      3601078
+qwen3.8-27b      loaded  20.3 GiB  10.2 GiB   65536   2      3750018
+
+Models on GPU: 44.8 GiB   |   System memory (shared with GPU): 78.0 GiB used / 121.7 GiB total, 43.6 GiB available
+               total        used        free      shared  buff/cache   available
+Mem:          124607       79906       22764        2451       26307       44701
+Swap:          16383        9860        6523
+utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W], temperature.gpu
+0 %, 2197 MHz, [N/A], 7.62 W, 44

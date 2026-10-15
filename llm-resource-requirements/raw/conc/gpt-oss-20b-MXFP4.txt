@@ -1,0 +1,16 @@
+0.00.501.225 W load: setting token '<|message|>' (200008) attribute to USER_DEFINED (16), old attributes: 8
+0.00.501.231 W load: setting token '<|start|>' (200006) attribute to USER_DEFINED (16), old attributes: 8
+0.00.501.231 W load: setting token '<|constrain|>' (200003) attribute to USER_DEFINED (16), old attributes: 8
+0.00.501.847 W load: setting token '<|channel|>' (200005) attribute to USER_DEFINED (16), old attributes: 8
+0.00.505.652 W load: special_eog_ids contains both '<|return|>' and '<|call|>', or '<|calls|>' and '<|flush|>' tokens, removing '<|end|>' token from EOG list
+0.08.277.519 W llama_context: n_ctx is not divisible by n_seq_max - rounding down to 40960
+
+llama_batched_bench: n_kv_max = 40960, n_batch = 2048, n_ubatch = 512, flash_attn = 1, is_pp_shared = 0, is_tg_separate = 0, n_gpu_layers = 99, n_threads = 20, n_threads_batch = 20
+
+|    PP |     TG |    B |   N_KV |   T_PP s | S_PP t/s |   T_TG s | S_TG t/s |      T s |    S t/s |
+|-------|--------|------|--------|----------|----------|----------|----------|----------|----------|
+|   512 |    128 |    1 |    640 |    0.270 |  1896.02 |    1.635 |    78.29 |    1.905 |   335.97 |
+|   512 |    128 |    2 |   1280 |    0.212 |  4830.99 |    2.071 |   123.60 |    2.283 |   560.64 |
+|   512 |    128 |    4 |   2560 |    0.419 |  4886.62 |    2.838 |   180.40 |    3.257 |   785.96 |
+|   512 |    128 |    8 |   5120 |    0.816 |  5020.44 |    4.227 |   242.27 |    5.042 |  1015.37 |
+

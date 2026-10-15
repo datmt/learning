@@ -1,0 +1,12 @@
+Thu Oct 15 07:32:27 AM +07 2026
+               total        used        free      shared  buff/cache   available
+Mem:          124607       12473       90187         912       24778      112134
+Swap:          16383        9741        6642
+utilization.gpu [%], clocks.current.sm [MHz], power.draw [W], temperature.gpu
+0 %, 2197 MHz, 7.81 W, 44
+pid, used_gpu_memory [MiB]
+4729, 61 MiB
+940174, 325 MiB
+1565537, 335 MiB
+618610, 394 MiB
+3601051, 170 MiB
