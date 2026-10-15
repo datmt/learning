@@ -1,0 +1,31 @@
+== qwen3.6-35b-a3b 12:00:36
+-- qwen3.6-35b-a3b chat rate=0.25 seed=1 dur=150 12:01:03
+-- qwen3.6-35b-a3b chat rate=0.3 seed=1 dur=150 12:03:36
+-- qwen3.6-35b-a3b chat rate=0.35 seed=1 dur=150 12:06:07
+-- qwen3.6-35b-a3b chat rate=0.2 seed=2 dur=150 12:08:41
+-- qwen3.6-35b-a3b chat rate=0.25 seed=2 dur=150 12:11:08
+-- qwen3.6-35b-a3b chat rate=0.3 seed=2 dur=150 12:13:32
+-- qwen3.6-35b-a3b chat rate=0.35 seed=2 dur=150 12:16:03
+-- qwen3.6-35b-a3b chat rate=0.4 seed=2 dur=150 12:18:43
+-- qwen3.6-35b-a3b chat rate=0.2 seed=3 dur=150 12:21:26
+-- qwen3.6-35b-a3b chat rate=0.25 seed=3 dur=150 12:23:50
+-- qwen3.6-35b-a3b chat rate=0.3 seed=3 dur=150 12:26:25
+-- qwen3.6-35b-a3b chat rate=0.35 seed=3 dur=150 12:28:55
+-- qwen3.6-35b-a3b chat rate=0.4 seed=3 dur=150 12:31:34
+-- qwen3.6-35b-a3b chat rate=0.2 seed=4 dur=150 12:34:06
+-- qwen3.6-35b-a3b chat rate=0.25 seed=4 dur=150 12:36:32
+-- qwen3.6-35b-a3b chat rate=0.3 seed=4 dur=150 12:39:02
+-- qwen3.6-35b-a3b chat rate=0.35 seed=4 dur=150 12:41:36
+-- qwen3.6-35b-a3b chat rate=0.4 seed=4 dur=150 12:44:03
+== qwen3.8-27b 12:46:40
+-- qwen3.8-27b chat rate=0.075 seed=1 dur=400 12:47:05
+-- qwen3.8-27b chat rate=0.05 seed=2 dur=600 12:54:11
+-- qwen3.8-27b chat rate=0.075 seed=2 dur=400 13:04:03
+-- qwen3.8-27b chat rate=0.1 seed=2 dur=300 13:10:47
+-- qwen3.8-27b chat rate=0.05 seed=3 dur=600 13:15:56
+-- qwen3.8-27b chat rate=0.075 seed=3 dur=400 13:25:36
+-- qwen3.8-27b chat rate=0.1 seed=3 dur=300 13:32:09
+-- qwen3.8-27b chat rate=0.05 seed=4 dur=600 13:37:07
+-- qwen3.8-27b chat rate=0.075 seed=4 dur=400 13:46:54
+-- qwen3.8-27b chat rate=0.1 seed=4 dur=300 13:53:37
+REPEATDONE

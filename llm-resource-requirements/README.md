@@ -10,13 +10,13 @@
 
 | Question | Answer (GB10, `llama.cpp`) |
 |---|---|
-| RAM for a ~30B model at 4-bit? | **~15–21 GiB** of weights, plus a KV cache that depends on architecture: **+2.6 to +8 GiB** at 128k context for the hybrid-attention models tested, **+18 GiB** for a conventional one. Measured process totals at 128k: **~23 GiB**. |
-| When is that memory taken? | **At launch.** Process memory was flat from load to the end of every workload (±0.1 GiB): the server reserves the whole context pool up front, so `-c` sets your memory, not your traffic. |
-| What decides generation speed? | **Memory bandwidth ÷ bytes streamed per token.** Predicted from a measured 216–243 GB/s read bandwidth, the dense models landed at **78–109%** of prediction (median 93%). A first-order guide, not an exact predictor. |
+| RAM for a ~30B model at 4-bit? | **~15–21 GiB** of weights, plus a KV cache that depends on architecture: **+2.6 to +8 GiB** at 128k context for the hybrid-attention models tested, **+18 GiB** for a conventional one. Measured **GPU-process** memory at 128k: **~23 GiB**; counting host RSS, the server took **~26–32 GiB** of the machine for the two Qwen models (§2.6). |
+| When is that memory taken? | **GPU-process memory: at launch.** It was flat from load to the end of every workload (±0.1 GiB): the server reserves the whole context pool up front, so `-c` sets that part. **Host RSS: it grows with use.** It rose from 0.8–1.3 GiB to 2.6–6.7 GiB and did not fall back (cause not isolated; consistent with the server's prompt cache). Budget both. |
+| What decides generation speed? | For the configurations tested, **memory bandwidth ÷ bytes streamed per token** is the main limit. Predicted from a measured 216–243 GB/s streaming-kernel read bandwidth, the dense models landed at **78–109%** of prediction (median 93%). A first-order guide, not an exact predictor. This is about *speed*: capacity still decides what fits, how much context you can configure, and how many models stay resident. |
 | What decides prompt-processing speed? | **Compute** (~45–55 TFLOP/s effective). Roughly `23,000 ÷ params(B)` tokens/s for dense models. |
 | Dense 27B vs MoE 35B-A3B (4-bit) | The MoE is **5.3× faster at generation** (67.7 vs 12.8 tok/s) and **2.8× faster at prompt processing**, with a file 35% bigger. |
 | Does quantizing hurt? | On wikitext-2 perplexity: Q8_0 **+0.29%**, Q4_K_M **+0.94%** vs BF16 (Qwen3-8B); Q4_K_M **+0.80%** vs Q8_0 (Gemma 3 12B). Perplexity only, not task quality. |
-| How many users can it serve? | Far fewer than aggregate throughput suggests. With 4 slots and a stated SLO, the 35B-A3B served **~0.2–0.4 chat requests/s** and the dense 27B **~0.05–0.1 requests/s**. SLO-compliant output was **~40% of the batched-benchmark aggregate**. |
+| How many users can it serve? | Far fewer than aggregate throughput suggests. With 4 slots and a stated SLO, a **preliminary** capacity bracket (§4.3 gives trials and spread) is **about 0.2–0.4 configured chat requests/s** for the 35B-A3B (every valid trial passed at 0.2, outcomes were mixed at 0.25–0.35, all failed at 0.4; by realized rate the boundary fell near 0.3 req/s) and **about 0.05–0.075** for the dense 27B (passed at 0.05 with P95 TTFT of 1.7–1.8 s against a 2 s limit, failed at 0.075). These are brackets from 3–4 trials per rate, not precise maxima. SLO-compliant output was **~40% of the batched-benchmark aggregate** (single-run comparison). |
 | Do long prompts hurt other users? | Yes. At 0.08 long-context req/s the 35B-A3B's P95 inter-token latency went from 87 ms to **1.2 s** for everyone. |
 
 ![Generation speed](images/01_generation_speed.png)
@@ -32,7 +32,7 @@
 | Software | `llama.cpp` commit `10a60cf` (clean tree, CUDA 13.0, arch 121, Release), driver 580.173.02. Full record in [`raw2/environment.txt`](raw2/environment.txt). |
 | Flags | `-fa 1 -ngl 99`, same as the production server. |
 
-**Unified memory** means "GPU memory" and "system RAM" are one pool, so a model can use nearly all 121 GiB (far more than a consumer GPU), but streaming it is limited by the pool's bandwidth (§3). Capacity is plentiful; bandwidth is the constraint.
+**Unified memory** means "GPU memory" and "system RAM" are one pool, so a model can use nearly all 121 GiB (far more than a consumer GPU), but streaming it is limited by the pool's bandwidth (§3). For *generation speed* on the configurations tested, bandwidth is the bottleneck, not capacity. Capacity still decides which models fit, how much context you can configure and how many models can stay resident together (§2, §4.3: with three production models resident, the machine was at ~89–93 GiB of 121.7 GiB).
 
 | Model | Type | Quant | Params (B) | File (GiB) | Bits/weight |
 |---|---|---|---:|---:|---:|
@@ -52,8 +52,21 @@
 ## 2. Where the memory goes
 
 ```
-memory ≈ weights + KV cache + buffers/overhead        (all reserved at launch)
+GPU-process memory ≈ weights + KV-cache pool + compute buffers      (reserved at launch)
+system memory used ≈ GPU-process memory + host RSS                  (RSS grows with use)
 ```
+
+Five different numbers get called "the memory", and they are not interchangeable. This post keeps them apart:
+
+| Term | What it is | How it is obtained |
+|---|---|---|
+| **Weights** | The model's tensors | GGUF file size (MEASURED) or `params × bits / 8` (THEORETICAL) |
+| **KV-cache allocation** | The context pool reserved at launch, `-c × bytes per token` | Formula from GGUF headers (THEORETICAL), slope checked in §2.4 |
+| **Inference-process (GPU) memory** | Weights + KV pool + compute buffers, as `nvidia-smi` attributes to the process. On unified memory this is *not* isolated VRAM | MEASURED (§2.4, §2.6) |
+| **Host RSS** | Resident host memory of the server process (runtime, prompt cache). Starts at ~1 GiB and **grows with use** | MEASURED (§2.6) |
+| **Total system consumption** | Increase in the machine's "used" memory (`free`) while the server runs | MEASURED (§2.6); includes anything else on the machine |
+
+Worked example from §2.6 for Qwen3.6 35B-A3B at 131k context: weights 20.6 GiB + KV pool ≈ 2.6 GiB ≈ 23.2 GiB, against a measured GPU-process 23.3 GiB; host RSS grew to 3.3 GiB; total system consumption peaked at +26.2 GiB. For the dense Qwen3.8 27B the same three figures were 23.4, 6.7 and +31.6 GiB. **Quoting only the GPU-process number understates what the server takes from the machine by 3–8 GiB.**
 
 ### 2.1 Weights (THEORETICAL, confirmed by file sizes)
 
@@ -146,7 +159,7 @@ Round 1 gave one number per configuration. Round 2 samples memory every 0.5 s th
 
 What the data shows:
 
-- **Memory is reserved at launch, not consumed by traffic.** GPU process memory rose in two steps during load (weights first, then KV cache and compute buffers) and then stayed flat to within 0.1 GiB through every workload, including the 130k-token request. Sizing is therefore decided by `-c` and the model, not by how busy the server is.
+- **GPU-process memory is reserved at launch, not consumed by traffic.** It rose in two steps during load (weights first, then KV cache and compute buffers) and then stayed flat to within 0.1 GiB through every workload, including the 130k-token request. That part is decided by `-c` and the model, not by how busy the server is. It is **not** the whole cost: see the next bullet.
 - **Host memory does grow with use.** Process RSS started at 0.8–1.3 GiB and ended at 2.6–6.7 GiB, and did not fall after the work finished. That is consistent with the server's host-side prompt cache (`--cache-ram`, default 8192 MiB per the server's own help text), but I did not isolate the cause. Budget a few GiB of host memory per server on top of the GPU figure.
 - **On this unified-memory system the two counters add up.** GPU-process memory plus RSS matched the machine-wide increase in "used" memory within 1.5 GiB for all four models, so they do not double-count.
 - **No real memory pressure here, but not zero.** Minimum available memory stayed at about 32 GiB or more and the kernel's memory-pressure indicator (PSI) peaked at 3.0–4.3% during model load, then fell to 0. The machine also had ~10.5 GiB of swap in use before every run, from other workloads, and it barely moved.
@@ -239,6 +252,17 @@ Round 1 *inferred* a bandwidth from throughput, which is circular. Round 2 **mea
 | write | 16.00 | 20 | 192 | 188 | 192 | 178 | 70% |
 
 Read bandwidth is **~243 GB/s on small buffers, falling to ~216 GB/s at 16 GiB**, i.e. 79–89% of the published 273 GB/s peak (THEORETICAL, from the spec sheet, not verified here). Writes reach about 193 GB/s. At 16 GiB, one iteration dropped to 83 GB/s; it is kept in the data, since no exclusion rule was defined in advance. This is a *simple streaming kernel*, an estimate of what a well-behaved kernel can pull, not the access pattern of llama.cpp's matrix kernels.
+
+**Four different "bandwidths" appear in this section; they are not interchangeable:**
+
+| Term | Value here | Status |
+|---|---|---|
+| Theoretical peak | 273 GB/s | Spec sheet; not verified here |
+| Measured streaming-kernel bandwidth | ~243 GB/s (small buffers) to ~216 GB/s (16 GiB) read | MEASURED with `membw.cu`, a simple kernel, not llama.cpp's kernels |
+| Inferred effective bandwidth | observed tok/s × bytes streamed per token | DERIVED; it is only as good as the bytes-per-token estimate and includes every non-bandwidth cost |
+| Actual LLM throughput | tok/s from `llama-bench` | MEASURED |
+
+The prediction compares the third and fourth against the second. The ratio is a model-fit check, not a hardware measurement: where it falls short (small models, Q4_K kernels) the gap is overhead or kernel efficiency, not a lower bandwidth ceiling.
 
 **Bytes streamed per token (DERIVED from the GGUF tensor table).** Almost all weights are read once per token. The exception is the token-embedding table: only one row is looked up, unless the output head is *tied* to it (as in Gemma 3), in which case it is read in full. Excluding the embedding table saves 4–8% for untied models.
 
@@ -367,7 +391,9 @@ Batching decode is nearly free because decode is limited by *reading weights*, w
 | long | 8,000 / 16,000 / 24,000 | 100 / 300 / 600 |
 | mixed | 80% chat + 20% long | |
 
-**SLOs, fixed before running and not tuned to results.** chat: P95 TTFT ≤ 2 s *and* P95 ITL ≤ 100 ms *and* zero failures. long and mixed: P95 TTFT ≤ 60 s *and* P95 ITL ≤ 200 ms *and* zero failures. A rate is judged only if ≥ 20 requests completed.
+**SLOs, fixed before running and not tuned to results.** chat: P95 TTFT ≤ 2 s *and* P95 ITL ≤ 100 ms *and* zero failures. long and mixed: P95 TTFT ≤ 60 s *and* P95 ITL ≤ 200 ms *and* zero failures. A run is judged only if ≥ 20 requests completed.
+
+**Repeats.** The first sweep used one run (seed 1) per rate. A follow-up (`bench_latency_repeat.sh`, same server flags and SLOs, fresh server) added seeds 1–4 at 0.2–0.4 req/s for the 35B-A3B (intermediate rates 0.25, 0.3, 0.35) and at 0.05–0.1 req/s for the 27B (intermediate rate 0.075). The seed sets arrival times, prompt/output lengths and prompt offsets, so trials with different seeds are independent. All 28 follow-up attempts completed; none failed to produce a summary (manifest: [`raw2/latency_rep/manifest.tsv`](raw2/latency_rep/manifest.tsv)). The original single runs are unchanged and count as seed 1 where applicable.
 
 ![Chat latency](images/10_latency_chat.png)
 
@@ -375,16 +401,44 @@ Batching decode is nearly free because decode is limited by *reading weights*, w
 
 SLO: P95 TTFT ≤ 2 s, P95 ITL ≤ 100 ms, zero failures. Percentiles are shown only when ≥ 20 requests completed; `n/a` means too few samples to judge.
 
-| Model | Offered req/s | Dur (s) | Sent | Done | Failed | Realized offered req/s | Out tok/s | TTFT p50 (s) | TTFT p95 (s) | TTFT p99 (s) | ITL p50 (ms) | ITL p95 (ms) | E2E p50 (s) | E2E p95 (s) | Peak sys used (GiB) | SLO |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Qwen3.6 35B-A3B (MoE) | 0.2 | 150 | 40 | 40 | 0 | 0.267 | 62.2 | 0.44 | 0.94 | 1.94 | 25 | 32 | 6.4 | 12.1 | 89.6 | PASS |
-| Qwen3.6 35B-A3B (MoE) | 0.4 | 150 | 67 | 67 | 0 | 0.447 | 99.3 | 6.07 | 15.10 | 15.98 | 30 | 34 | 14.9 | 23.3 | 92.2 | FAIL |
-| Qwen3.6 35B-A3B (MoE) | 0.7 | 150 | 111 | 111 | 0 | 0.740 | 165.2 | 48.13 | 78.58 | 81.56 | 31 | 35 | 55.2 | 88.3 | 92.1 | FAIL |
-| Qwen3.6 35B-A3B (MoE) | 1.0 | 150 | 162 | 121 | 41 | 1.080 | 184.1 | 73.56 | 119.96 | 120.17 | 31 | 35 | 80.1 | 131.2 | 92.1 | FAIL |
-| Qwen3.8 27B (dense) | 0.05 | 420 | 27 | 27 | 0 | 0.064 | 15.7 | 1.05 | 1.68 | 2.11 | 89 | 97 | 22.2 | 37.9 | 91.8 | PASS |
-| Qwen3.8 27B (dense) | 0.1 | 300 | 40 | 40 | 0 | 0.133 | 31.1 | 4.10 | 29.07 | 33.43 | 95 | 98 | 30.4 | 55.4 | 92.6 | FAIL |
-| Qwen3.8 27B (dense) | 0.15 | 200 | 40 | 40 | 0 | 0.200 | 46.6 | 37.53 | 58.41 | 61.41 | 95 | 99 | 64.8 | 79.6 | 92.3 | FAIL |
-| Qwen3.8 27B (dense) | 0.2 | 150 | 40 | 40 | 0 | 0.267 | 62.1 | 65.84 | 104.01 | 107.22 | 95 | 100 | 85.3 | 118.3 | 92.4 | FAIL |
+| Model | Offered req/s | Seed | Dur (s) | Sent | Done | Failed | Realized offered req/s | Out tok/s | TTFT p50 (s) | TTFT p95 (s) | TTFT p99 (s) | ITL p50 (ms) | ITL p95 (ms) | E2E p50 (s) | E2E p95 (s) | Peak sys used (GiB) | SLO |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Qwen3.6 35B-A3B (MoE) | 0.2 | 1 | 150 | 40 | 40 | 0 | 0.267 | 62.2 | 0.44 | 0.94 | 1.94 | 25 | 32 | 6.4 | 12.1 | 89.6 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.2 | 2 | 150 | 30 | 30 | 0 | 0.200 | 42.1 | 0.42 | 0.69 | 0.72 | 17 | 26 | 4.2 | 7.6 | 93.5 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.2 | 3 | 150 | 16 | 16 | 0 | 0.107 | 21.9 | – | – | – | 16 | 21 | – | – | 92.9 | n/a (n<20) |
+| Qwen3.6 35B-A3B (MoE) | 0.2 | 4 | 150 | 33 | 33 | 0 | 0.220 | 48.8 | 0.40 | 0.79 | 0.87 | 20 | 31 | 5.1 | 9.8 | 93.1 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.25 | 1 | 150 | 45 | 45 | 0 | 0.300 | 69.6 | 0.50 | 4.66 | 5.58 | 26 | 32 | 7.1 | 14.2 | 91.4 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.25 | 2 | 150 | 33 | 33 | 0 | 0.220 | 45.6 | 0.44 | 0.73 | 0.83 | 20 | 30 | 4.5 | 8.4 | 93.5 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.25 | 3 | 150 | 21 | 21 | 0 | 0.140 | 29.4 | 0.33 | 0.54 | 0.55 | 16 | 25 | 4.2 | 6.7 | 92.0 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.25 | 4 | 150 | 40 | 40 | 0 | 0.267 | 59.2 | 0.39 | 1.62 | 3.38 | 21 | 31 | 5.5 | 11.9 | 93.0 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.3 | 1 | 150 | 51 | 51 | 0 | 0.340 | 77.9 | 0.63 | 9.25 | 10.54 | 29 | 33 | 7.9 | 17.2 | 93.1 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.3 | 2 | 150 | 37 | 37 | 0 | 0.247 | 51.4 | 0.45 | 0.77 | 0.91 | 21 | 31 | 4.9 | 9.6 | 93.5 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.3 | 3 | 150 | 29 | 29 | 0 | 0.193 | 40.7 | 0.35 | 0.68 | 1.42 | 20 | 32 | 5.1 | 8.4 | 92.5 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.3 | 4 | 150 | 46 | 46 | 0 | 0.307 | 70.4 | 0.42 | 3.48 | 5.96 | 25 | 32 | 6.1 | 14.0 | 92.8 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.35 | 1 | 150 | 59 | 59 | 0 | 0.393 | 85.6 | 0.81 | 12.61 | 13.38 | 30 | 33 | 9.0 | 20.1 | 93.5 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.35 | 2 | 150 | 44 | 44 | 0 | 0.293 | 66.0 | 0.49 | 1.03 | 1.49 | 23 | 31 | 5.6 | 12.3 | 93.8 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.35 | 3 | 150 | 40 | 40 | 0 | 0.267 | 56.3 | 0.39 | 0.68 | 1.96 | 21 | 32 | 5.3 | 9.4 | 93.0 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.35 | 4 | 150 | 51 | 51 | 0 | 0.340 | 77.2 | 0.58 | 5.84 | 7.99 | 26 | 32 | 7.4 | 17.4 | 93.1 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.4 | 1 | 150 | 67 | 67 | 0 | 0.447 | 99.3 | 6.07 | 15.10 | 15.98 | 30 | 34 | 14.9 | 23.3 | 92.2 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.4 | 2 | 150 | 52 | 52 | 0 | 0.347 | 78.6 | 0.65 | 5.16 | 7.88 | 26 | 33 | 7.3 | 15.1 | 93.3 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.4 | 3 | 150 | 45 | 45 | 0 | 0.300 | 65.1 | 0.51 | 2.32 | 5.46 | 27 | 32 | 6.2 | 15.0 | 92.8 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.4 | 4 | 150 | 55 | 55 | 0 | 0.367 | 83.3 | 0.83 | 9.14 | 10.62 | 30 | 33 | 8.4 | 18.2 | 92.8 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.7 | 1 | 150 | 111 | 111 | 0 | 0.740 | 165.2 | 48.13 | 78.58 | 81.56 | 31 | 35 | 55.2 | 88.3 | 92.1 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 1.0 | 1 | 150 | 162 | 121 | 41 | 1.080 | 184.1 | 73.56 | 119.96 | 120.17 | 31 | 35 | 80.1 | 131.2 | 92.1 | FAIL |
+| Qwen3.8 27B (dense) | 0.05 | 1 | 420 | 27 | 27 | 0 | 0.064 | 15.7 | 1.05 | 1.68 | 2.11 | 89 | 97 | 22.2 | 37.9 | 91.8 | PASS |
+| Qwen3.8 27B (dense) | 0.05 | 2 | 600 | 30 | 30 | 0 | 0.050 | 10.5 | 1.09 | 1.84 | 1.92 | 85 | 92 | 18.0 | 34.9 | 93.1 | PASS |
+| Qwen3.8 27B (dense) | 0.05 | 3 | 600 | 16 | 16 | 0 | 0.027 | 5.5 | – | – | – | 80 | 90 | – | – | 92.0 | n/a (n<20) |
+| Qwen3.8 27B (dense) | 0.05 | 4 | 600 | 33 | 33 | 0 | 0.055 | 12.2 | 0.96 | 1.82 | 1.83 | 86 | 96 | 20.2 | 37.5 | 92.5 | PASS |
+| Qwen3.8 27B (dense) | 0.075 | 1 | 400 | 40 | 40 | 0 | 0.100 | 23.3 | 1.32 | 10.12 | 13.62 | 95 | 99 | 27.9 | 41.0 | 93.7 | FAIL |
+| Qwen3.8 27B (dense) | 0.075 | 2 | 400 | 30 | 30 | 0 | 0.075 | 15.8 | 1.17 | 2.02 | 2.25 | 86 | 96 | 19.3 | 37.2 | 93.6 | FAIL |
+| Qwen3.8 27B (dense) | 0.075 | 3 | 400 | 16 | 16 | 0 | 0.040 | 8.2 | – | – | – | 81 | 95 | – | – | 91.9 | n/a (n<20) |
+| Qwen3.8 27B (dense) | 0.075 | 4 | 400 | 33 | 33 | 0 | 0.083 | 18.3 | 1.16 | 6.32 | 10.16 | 91 | 98 | 24.2 | 44.7 | 92.6 | FAIL |
+| Qwen3.8 27B (dense) | 0.1 | 1 | 300 | 40 | 40 | 0 | 0.133 | 31.1 | 4.10 | 29.07 | 33.43 | 95 | 98 | 30.4 | 55.4 | 92.6 | FAIL |
+| Qwen3.8 27B (dense) | 0.1 | 2 | 300 | 30 | 30 | 0 | 0.100 | 21.1 | 1.31 | 2.65 | 3.68 | 90 | 98 | 19.9 | 39.1 | 93.3 | FAIL |
+| Qwen3.8 27B (dense) | 0.1 | 3 | 300 | 16 | 16 | 0 | 0.053 | 11.0 | – | – | – | 85 | 96 | – | – | 91.9 | n/a (n<20) |
+| Qwen3.8 27B (dense) | 0.1 | 4 | 300 | 33 | 33 | 0 | 0.110 | 24.4 | 1.19 | 14.93 | 20.69 | 95 | 99 | 25.9 | 50.8 | 92.8 | FAIL |
+| Qwen3.8 27B (dense) | 0.15 | 1 | 200 | 40 | 40 | 0 | 0.200 | 46.6 | 37.53 | 58.41 | 61.41 | 95 | 99 | 64.8 | 79.6 | 92.3 | FAIL |
+| Qwen3.8 27B (dense) | 0.2 | 1 | 150 | 40 | 40 | 0 | 0.267 | 62.1 | 65.84 | 104.01 | 107.22 | 95 | 100 | 85.3 | 118.3 | 92.4 | FAIL |
 
 ![Long-context latency](images/10_latency_long.png)
 
@@ -392,43 +446,90 @@ SLO: P95 TTFT ≤ 2 s, P95 ITL ≤ 100 ms, zero failures. Percentiles are shown 
 
 SLO: P95 TTFT ≤ 60 s, P95 ITL ≤ 200 ms, zero failures. Percentiles are shown only when ≥ 20 requests completed; `n/a` means too few samples to judge.
 
-| Model | Offered req/s | Dur (s) | Sent | Done | Failed | Realized offered req/s | Out tok/s | TTFT p50 (s) | TTFT p95 (s) | TTFT p99 (s) | ITL p50 (ms) | ITL p95 (ms) | E2E p50 (s) | E2E p95 (s) | Peak sys used (GiB) | SLO |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Qwen3.6 35B-A3B (MoE) | 0.05 | 420 | 27 | 27 | 0 | 0.064 | 23.3 | 18.68 | 44.48 | 51.48 | 36 | 87 | 51.9 | 88.5 | 91.8 | PASS |
-| Qwen3.6 35B-A3B (MoE) | 0.08 | 420 | 40 | 40 | 0 | 0.095 | 33.1 | 94.21 | 153.17 | 161.21 | 37 | 1167 | 128.6 | 181.4 | 91.3 | FAIL |
-| Qwen3.6 35B-A3B (MoE) | 0.12 | 420 | 55 | 41 | 14 | 0.131 | 33.1 | 142.58 | 267.65 | 279.87 | 38 | 1184 | 195.0 | 300.7 | 91.2 | FAIL |
-| Qwen3.8 27B (dense) | 0.015 | 400 | 8 | 8 | 0 | 0.020 | 8.5 | – | – | – | 100 | 114 | – | – | 92.9 | n/a (n<20) |
-| Qwen3.8 27B (dense) | 0.03 | 400 | 19 | 11 | 8 | 0.048 | 10.6 | – | – | – | 112 | 234 | – | – | 91.9 | n/a (n<20) |
+| Model | Offered req/s | Seed | Dur (s) | Sent | Done | Failed | Realized offered req/s | Out tok/s | TTFT p50 (s) | TTFT p95 (s) | TTFT p99 (s) | ITL p50 (ms) | ITL p95 (ms) | E2E p50 (s) | E2E p95 (s) | Peak sys used (GiB) | SLO |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Qwen3.6 35B-A3B (MoE) | 0.05 | 1 | 420 | 27 | 27 | 0 | 0.064 | 23.3 | 18.68 | 44.48 | 51.48 | 36 | 87 | 51.9 | 88.5 | 91.8 | PASS |
+| Qwen3.6 35B-A3B (MoE) | 0.08 | 1 | 420 | 40 | 40 | 0 | 0.095 | 33.1 | 94.21 | 153.17 | 161.21 | 37 | 1167 | 128.6 | 181.4 | 91.3 | FAIL |
+| Qwen3.6 35B-A3B (MoE) | 0.12 | 1 | 420 | 55 | 41 | 14 | 0.131 | 33.1 | 142.58 | 267.65 | 279.87 | 38 | 1184 | 195.0 | 300.7 | 91.2 | FAIL |
+| Qwen3.8 27B (dense) | 0.015 | 1 | 400 | 8 | 8 | 0 | 0.020 | 8.5 | – | – | – | 100 | 114 | – | – | 92.9 | n/a (n<20) |
+| Qwen3.8 27B (dense) | 0.03 | 1 | 400 | 19 | 11 | 8 | 0.048 | 10.6 | – | – | – | 112 | 234 | – | – | 91.9 | n/a (n<20) |
 
 **Load test: mixed profile (MEASURED)**
 
 SLO: P95 TTFT ≤ 60 s, P95 ITL ≤ 200 ms, zero failures. Percentiles are shown only when ≥ 20 requests completed; `n/a` means too few samples to judge.
 
-| Model | Offered req/s | Dur (s) | Sent | Done | Failed | Realized offered req/s | Out tok/s | TTFT p50 (s) | TTFT p95 (s) | TTFT p99 (s) | ITL p50 (ms) | ITL p95 (ms) | E2E p50 (s) | E2E p95 (s) | Peak sys used (GiB) | SLO |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Qwen3.6 35B-A3B (MoE) | 0.3 | 240 | 68 | 68 | 0 | 0.283 | 67.0 | 6.88 | 26.10 | 28.69 | 32 | 37 | 20.2 | 38.1 | 91.1 | PASS |
+| Model | Offered req/s | Seed | Dur (s) | Sent | Done | Failed | Realized offered req/s | Out tok/s | TTFT p50 (s) | TTFT p95 (s) | TTFT p99 (s) | ITL p50 (ms) | ITL p95 (ms) | E2E p50 (s) | E2E p95 (s) | Peak sys used (GiB) | SLO |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Qwen3.6 35B-A3B (MoE) | 0.3 | 1 | 240 | 68 | 68 | 0 | 0.283 | 67.0 | 6.88 | 26.10 | 28.69 | 32 | 37 | 20.2 | 38.1 | 91.1 | PASS |
 
-**Highest tested rate meeting the SLO (MEASURED capacity point, not a theoretical maximum)**
+**Per-rate results across independent trials (MEASURED; each trial = a different random seed)**
 
-| Profile | Model | Rates tested (req/s) | Highest passing | First failing | Rates with too few samples |
-|---|---|---|---:|---:|---:|
-| chat | Qwen3.6 35B-A3B (MoE) | 0.2, 0.4, 0.7, 1.0 | 0.2 req/s | 0.4 | – |
-| chat | Qwen3.8 27B (dense) | 0.05, 0.1, 0.15, 0.2 | 0.05 req/s | 0.1 | – |
-| long | Qwen3.6 35B-A3B (MoE) | 0.05, 0.08, 0.12 | 0.05 req/s | 0.08 | – |
-| long | Qwen3.8 27B (dense) | 0.015, 0.03 | none of the tested rates | – | 0.015, 0.03 |
-| mixed | Qwen3.6 35B-A3B (MoE) | 0.3 | 0.3 req/s | – | – |
+A trial passes only if P95 TTFT and P95 ITL meet the SLO, nothing failed, and at least 20 requests completed; a trial with fewer than 20 completions has no verdict and is excluded from the pass count (shown as n<20). TTFT p95 is the median over trials, with the min–max range in brackets; with n of 3–5 trials the range, not a confidence interval, is the honest measure of spread.
+
+| Profile | Model | Offered req/s | Trials | Realized offered req/s (range) | Valid trials passing | Failed requests (total) | P95 TTFT (s), median (range) | Rate verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| chat | Qwen3.6 35B-A3B (MoE) | 0.2 | 4 | 0.107–0.267 | 3/3 (+1 n<20) | 0 | 0.79 (0.69–0.94) | PASS (all valid trials) |
+| chat | Qwen3.6 35B-A3B (MoE) | 0.25 | 4 | 0.140–0.300 | 3/4 | 0 | 1.18 (0.54–4.66) | MIXED |
+| chat | Qwen3.6 35B-A3B (MoE) | 0.3 | 4 | 0.193–0.340 | 2/4 | 0 | 2.13 (0.68–9.25) | MIXED |
+| chat | Qwen3.6 35B-A3B (MoE) | 0.35 | 4 | 0.267–0.393 | 2/4 | 0 | 3.44 (0.68–12.61) | MIXED |
+| chat | Qwen3.6 35B-A3B (MoE) | 0.4 | 4 | 0.300–0.447 | 0/4 | 0 | 7.15 (2.32–15.10) | FAIL (all valid trials) |
+| chat | Qwen3.6 35B-A3B (MoE) | 0.7 | 1 | 0.740–0.740 | 0/1 | 0 | 78.58 (78.58–78.58) | FAIL (all valid trials) |
+| chat | Qwen3.6 35B-A3B (MoE) | 1.0 | 1 | 1.080–1.080 | 0/1 | 41 | 119.96 (119.96–119.96) | FAIL (all valid trials) |
+| chat | Qwen3.8 27B (dense) | 0.05 | 4 | 0.027–0.064 | 3/3 (+1 n<20) | 0 | 1.82 (1.68–1.84) | PASS (all valid trials) |
+| chat | Qwen3.8 27B (dense) | 0.075 | 4 | 0.040–0.100 | 0/3 (+1 n<20) | 0 | 6.32 (2.02–10.12) | FAIL (all valid trials) |
+| chat | Qwen3.8 27B (dense) | 0.1 | 4 | 0.053–0.133 | 0/3 (+1 n<20) | 0 | 14.93 (2.65–29.07) | FAIL (all valid trials) |
+| chat | Qwen3.8 27B (dense) | 0.15 | 1 | 0.200–0.200 | 0/1 | 0 | 58.41 (58.41–58.41) | FAIL (all valid trials) |
+| chat | Qwen3.8 27B (dense) | 0.2 | 1 | 0.267–0.267 | 0/1 | 0 | 104.01 (104.01–104.01) | FAIL (all valid trials) |
+| long | Qwen3.6 35B-A3B (MoE) | 0.05 | 1 | 0.064–0.064 | 1/1 | 0 | 44.48 (44.48–44.48) | PASS (all valid trials) |
+| long | Qwen3.6 35B-A3B (MoE) | 0.08 | 1 | 0.095–0.095 | 0/1 | 0 | 153.17 (153.17–153.17) | FAIL (all valid trials) |
+| long | Qwen3.6 35B-A3B (MoE) | 0.12 | 1 | 0.131–0.131 | 0/1 | 14 | 267.65 (267.65–267.65) | FAIL (all valid trials) |
+| long | Qwen3.8 27B (dense) | 0.015 | 1 | 0.020–0.020 | 0/0 (+1 n<20) | 0 | – | no verdict |
+| long | Qwen3.8 27B (dense) | 0.03 | 1 | 0.048–0.048 | 0/0 (+1 n<20) | 8 | – | no verdict |
+| mixed | Qwen3.6 35B-A3B (MoE) | 0.3 | 1 | 0.283–0.283 | 1/1 | 0 | 26.10 (26.10–26.10) | PASS (all valid trials) |
+
+**Capacity bracket under the SLO (MEASURED; preliminary, a bracket and not a maximum)**
+
+"Highest passing" = the highest tested rate at which every trial met the SLO, with no lower rate failing. "Lowest rate not passing" = the lowest tested rate where any trial failed. Rates with mixed outcomes lie inside the uncertain region. Capacity is somewhere in this bracket; the number of trials is in brackets after each rate.
+
+| Profile | Model | Rates tested (req/s) | Highest rate passing in all trials | Lowest rate not passing | Rates with mixed outcomes | Rates with no verdict (n<20) |
+|---|---|---|---:|---:|---:|---:|
+| chat | Qwen3.6 35B-A3B (MoE) | 0.2 (n=4), 0.25 (n=4), 0.3 (n=4), 0.35 (n=4), 0.4 (n=4), 0.7 (n=1), 1.0 (n=1) | 0.2 req/s | 0.25 | 0.25, 0.3, 0.35 | – |
+| chat | Qwen3.8 27B (dense) | 0.05 (n=4), 0.075 (n=4), 0.1 (n=4), 0.15 (n=1), 0.2 (n=1) | 0.05 req/s | 0.075 | – | – |
+| long | Qwen3.6 35B-A3B (MoE) | 0.05 (n=1), 0.08 (n=1), 0.12 (n=1) | 0.05 req/s | 0.08 | – | – |
+| long | Qwen3.8 27B (dense) | 0.015 (n=1), 0.03 (n=1) | none tested | – | – | 0.015, 0.03 |
+| mixed | Qwen3.6 35B-A3B (MoE) | 0.3 (n=1) | 0.3 req/s | – | – | – |
+
+![Chat P95 TTFT by realized rate](images/11_latency_vs_realized.png)
+
+**Outcome versus realized arrival rate (EXPLORATORY, post hoc)**
+
+Because each run is a short Poisson window, the realized rate (arrivals ÷ duration) differs a lot from the configured rate. This table re-sorts the same runs by realized rate. It was chosen after seeing the data, so it is a description, not a tested threshold, and it holds only for these window lengths: a longer window lets a queue build further before it ends.
+
+| Profile | Model | Runs with a verdict | Highest realized rate that passed (req/s) | Lowest realized rate that failed (req/s) | Pass/fail ranges | Failures below highest pass |
+|---|---|---:|---:|---:|---|---:|
+| chat | Qwen3.6 35B-A3B (MoE) | 21 | 0.293 | 0.300 | separated | 0 |
+| chat | Qwen3.8 27B (dense) | 11 | 0.064 | 0.075 | separated | 0 |
 
 What it shows:
 
-- **Interactive capacity is much lower than aggregate throughput implies.** The 35B-A3B passed the chat SLO at the lowest rate (P95 TTFT 0.94 s) and failed at the next (15.1 s). The dense 27B passed at 0.05 req/s and failed at 0.1 (P95 TTFT 29 s). Capacity under this SLO therefore lies between the two tested rates for each: roughly **0.2–0.4 req/s** (35B-A3B) and **0.05–0.1 req/s** (27B). I tested few rates, so the resolution is coarse.
-- **The SLO-compliant output rate was ~40% of the batched aggregate.** The highest passing chat runs carried 62 tok/s (35B-A3B) and 15.7 tok/s (27B), against 155 and 43 tok/s aggregate at 4 streams in §4.2. Queueing for one of only 4 slots, and variance in arrival and output length, consume the rest.
-- **The failure mode is queueing, not slow decoding.** P95 ITL stayed flat (32–35 ms for the MoE) while TTFT climbed from under a second to over a minute.
-- **The dense 27B sits at the edge of a 10 tok/s-per-user target.** Its P95 ITL was 97–100 ms even at light load (4 streams share one weight read).
+- **Interactive capacity is much lower than aggregate throughput implies, and the boundary is a region, not a point.** For the 35B-A3B, every trial with a verdict passed the chat SLO at a configured 0.2 req/s (3 valid trials, P95 TTFT 0.69–0.94 s) and all 4 failed at 0.4 (2.3–15.1 s); at 0.25, 0.3 and 0.35 the outcome depended on the seed (3, 2 and 2 of 4 passed). For the dense 27B, all 3 valid trials passed at 0.05 (P95 TTFT 1.68–1.84 s, close to the 2 s limit) and all 3 failed at 0.075 (2.02–10.1 s; the best of those missed the limit by 0.02 s) and at 0.1. Capacity is therefore bracketed at roughly **0.2–0.4 req/s** (35B-A3B) and **0.05–0.075 req/s** (27B), configured. These are preliminary brackets from 3–4 trials per rate, not precise maxima, and with trials this few no confidence interval is claimed.
+- **Why outcomes are mixed: the realized rate varies a lot between short windows.** A configured 0.2 req/s produced between 16 and 40 arrivals in 150 s (0.107–0.267 req/s). Re-sorting the 35B-A3B runs by *realized* rate separates them cleanly: the highest passing run was at 0.293 req/s and the lowest failing at 0.300 (21 runs with a verdict, none overlapping). The 27B likewise separates between 0.064 (pass) and 0.075 (fail) (11 runs). This reading was formed after seeing the data and holds only for these window lengths (a longer window lets a queue grow further), so treat it as a description of what happened, not a tested threshold.
+- **The SLO-compliant output rate was roughly 40% of the batched aggregate.** The highest-throughput passing chat trials carried 66 tok/s (35B-A3B) and 15.7 tok/s (27B), against 155 and 43 tok/s aggregate at 4 streams in §4.2 (43% and 37%). Queueing for one of only 4 slots, and variance in arrival and output length, consume the rest. The batched figures are single runs (§4.2).
+- **The failure mode is queueing, not slow decoding.** P95 ITL stayed flat (21–35 ms for the MoE across all chat trials) while P95 TTFT climbed from under a second to about two minutes.
+- **The dense 27B sits at the edge of a 10 tok/s-per-user target.** Its P95 ITL was 90–100 ms even at light load (4 streams share one weight read).
 - **Long prompts stall everyone.** For the 35B-A3B, P95 ITL rose from 87 ms at 0.05 long req/s to **1.17 s** at 0.08, while the median stayed at 37 ms: long prefills occupy the GPU and delay other users' decoding. TTFT P95 went from 44 s (pass) to 153 s; at 0.12 req/s, 14 of 55 requests had not finished when the test stopped.
 - **27B long-context: no verdict.** At its slow capacity (about one 16k request every ~50 s per slot) even 400 s yields too few completions for percentiles. At 0.03 req/s, 8 of 19 requests were unfinished at the end, which is itself informative.
 - **The mixed point is one run, not a capacity limit.** The 35B-A3B passed its (lenient) SLO at 0.3 req/s (P95 TTFT 26 s).
 
-**Limits of this measurement.** One run and one random seed per rate, so the realized arrival rate differs from the target (e.g. 40 requests arrived in the "0.2 req/s" run, i.e. 0.267 req/s; the tables show the realized rate). Only 4 slots were tested; more slots change the picture. The other two production models were resident but idle, so "peak system used" in the tables is machine-wide (~89–93 GiB) and not a per-server figure. Queue wait is not observable separately; it is inside TTFT.
+**Limits of this measurement.**
+
+- **Few trials.** 3–4 trials per chat rate near the boundary (1 elsewhere); one run for the long and mixed profiles. The long and mixed results are single runs and are not capacity limits.
+- **Trials without a verdict.** One of four seeds (seed 3) drew only 16 arrivals at the 27B's rates and at the 35B's 0.2 req/s, so it has fewer than the 20 completions required and is excluded from pass counts (shown as n<20). This reduces the 27B's evidence to 3 valid trials per rate.
+- **Shared seeds across rates.** The same seed gives the same arrival pattern and request lengths, only stretched in time, so trials at different rates with the same seed are correlated (an advantage for comparing rates, but the cross-rate trials are not independent). Independence holds across seeds.
+- **Configured versus realized rate.** Short Poisson windows realize rates far from the target (see the tables); the realized rate, not the configured one, tracked pass/fail.
+- **Two sessions and unequal windows.** The original sweep and the repeats ran in different server instances. The 27B at 0.05 req/s ran 420 s in the original sweep and 600 s in the repeats, to carry enough requests for percentiles.
+- **Only 4 slots were tested;** more slots change the picture. The other two production models were resident but idle, so "peak system used" in the tables is machine-wide (~89–93 GiB) and not a per-server figure.
+- **Queue wait is not observable separately;** it is inside TTFT. P95 over 20–60 requests is itself noisy.
 
 ### Power and thermals
 
@@ -459,13 +560,13 @@ Perplexity on the wikitext-2 test set (SHA-256 `173c87a5…`), 2048-token window
 
 ## 6. Recommendations
 
-1. **Budget memory as weights + KV cache + a few GiB of host cache.** Weights from `params × bits / 8`; KV from `layers × kv_heads × head_dim × 4 bytes` per token (f16) times the total context you configure, because it is reserved at launch (§2.6).
+1. **Budget memory as weights + KV cache (GPU process) + host RSS (a few GiB, measured 2.6–6.7 GiB after use) + whatever else shares the machine.** Weights from `params × bits / 8`; KV from `layers × kv_heads × head_dim × 4 bytes` per token (f16) times the total context you configure, because it is reserved at launch (§2.6).
 2. **Check the architecture before choosing a context length.** Hybrid-attention models make 128k contexts cheap; conventional ones can make long context cost more than the weights.
-3. **For interactive use on bandwidth-limited hardware, prefer MoE.** The 35B-A3B gave 5× the generation speed of the dense 27B, and its interactive capacity under the same SLO was several times higher. Use dense models when you need them and plan for ~13 tok/s.
+3. **For interactive use on bandwidth-limited hardware, prefer MoE.** The 35B-A3B gave 5× the generation speed of the dense 27B, and its configured-rate bracket under the same SLO (0.2–0.4 vs 0.05–0.075 req/s) was roughly 3–8× higher. Use dense models when you need them and plan for ~13 tok/s.
 4. **4-bit is the sweet spot for speed per byte, with a small measured perplexity cost.** On Qwen3-8B, BF16 → Q8_0 → Q4_K_M ran at 15.5 → 29.1 → 44.0 tok/s for +0.29% and +0.94% perplexity. Q8_0 on Gemma 12B used 1.7× the memory for 1.6× slower generation than Q4_K_M. Verify on your task.
 5. **Do not size a deployment from aggregate throughput.** Batching raises total tokens/s 3–5×, but the number of users you can serve at a latency target was about 40% of that, and long prompts degrade everyone's inter-token latency. Define an SLO and load-test with arrivals like yours (`scripts/load_test.py`).
 6. **Isolate long-context traffic, or cap prompt length.** Mixed long and short requests share the GPU, and a pool-sized request can crowd out others (§2.6).
-7. **Capacity is not the constraint on this hardware, bandwidth is.** A 121 GiB pool lets several models stay resident, but faster decode needs more bandwidth, not more RAM.
+7. **For generation speed, bandwidth is the main limit here; for what you can run at all, capacity still matters.** More RAM would not make the tested models decode faster, but the 121 GiB pool bounds model size, configured context (KV pool), concurrency (shared pool, §2.6) and how many models stay resident (~89–93 GiB used with three production models loaded). Plan both.
 8. **KV-cache quantization saves 19–33% total memory on Gemma 3 12B at 128k**, but evaluate quality first.
 
 ---
@@ -484,7 +585,7 @@ Everything is reproducible from [`scripts/`](scripts/) and the raw output in [`r
 | Quantization ladder | `llama-bench` | Qwen3-8B BF16/Q8_0/Q4_K_M, 5 repetitions, per-run samples kept in `raw2/ladder/` |
 | Perplexity | `bench_perplexity.sh` | wikitext-2 test set, 2048-token windows |
 | Memory lifecycle | `memory_lifecycle.py`, `bench_memory_lifecycle.sh` | 0.5 s sampling; every request validated |
-| Serving capacity | `load_test.py`, `bench_latency.sh` | open-loop Poisson arrivals, rate sweep, SLOs fixed in advance |
+| Serving capacity | `load_test.py`, `bench_latency.sh`, `bench_latency_repeat.sh` | open-loop Poisson arrivals, rate sweep, SLOs fixed in advance; repeats with seeds 1–4 and intermediate rates |
 
 **Conditions.** Round 1 ran with the two production models unloaded (baseline 12.5 GiB used). Round 2 ran with them loaded but idle (baseline ~59 GiB used, GPU at 0%), since the machine was shared. Absolute throughput could differ between rounds; see the prompt-speed caveat in §3.1.
 
@@ -501,7 +602,7 @@ Everything is reproducible from [`scripts/`](scripts/) and the raw output in [`r
 - `llama-bench` uses synthetic tokens at batch size 1. Real servers add sampling and scheduling overhead.
 - **No task-quality evaluation.** Perplexity covers one corpus and a few quantizations.
 - Bandwidth is measured with a simple kernel and is not a hardware counter reading. MoE bytes per token are inferred.
-- Round-1 memory and batched-concurrency points are single runs. The round-2 memory lifecycle is one run per model; the load test is one run and one seed per rate. Few rates were tested, so capacity points are brackets, not precise values.
+- Round-1 memory and batched-concurrency points are single runs. The round-2 memory lifecycle is one run per model; the chat load tests have 3–4 valid trials per rate near the boundary and the long and mixed tests are single runs. Capacity points are brackets, not precise values.
 - `nvidia-smi` per-process memory on unified memory is not isolated VRAM; the GPU/host split is blurry, so differences under ~1 GiB should not be over-interpreted.
 - Gemma and gpt-oss were tested to 16k depth only; Qwen3 8B BF16 memory to 32k (its 128k KV figure is extrapolated).
 - Only 4 server slots and one runtime were tested. Results do not transfer to other GPUs or engines without testing.

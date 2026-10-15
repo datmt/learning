@@ -218,7 +218,7 @@ def main():
     enough = n >= 20  # percentiles over fewer than 20 samples are not meaningful
     sm = {
         "profile": a.profile, "rate_req_s": a.rate, "duration_s": a.duration, "seed": a.seed,
-        "scheduled": len(sched), "completed": n, "failed": len(bad) + unfinished, "errors": errs,
+        "scheduled": len(sched), "realized_rate_req_s": round(len(sched) / a.duration, 4), "completed": n, "failed": len(bad) + unfinished, "errors": errs,
         "wall_s": round(wall, 1),
         "completed_req_s": round(n / a.duration, 4),
         "input_tok_s": round(sum(r["prompt_tokens"] for r in ok) / a.duration, 1),

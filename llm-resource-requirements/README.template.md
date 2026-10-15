@@ -10,13 +10,13 @@
 
 | Question | Answer (GB10, `llama.cpp`) |
 |---|---|
-| RAM for a ~30B model at 4-bit? | **~15–21 GiB** of weights, plus a KV cache that depends on architecture: **+2.6 to +8 GiB** at 128k context for the hybrid-attention models tested, **+18 GiB** for a conventional one. Measured process totals at 128k: **~23 GiB**. |
-| When is that memory taken? | **At launch.** Process memory was flat from load to the end of every workload (±0.1 GiB): the server reserves the whole context pool up front, so `-c` sets your memory, not your traffic. |
-| What decides generation speed? | **Memory bandwidth ÷ bytes streamed per token.** Predicted from a measured 216–243 GB/s read bandwidth, the dense models landed at **78–109%** of prediction (median 93%). A first-order guide, not an exact predictor. |
+| RAM for a ~30B model at 4-bit? | **~15–21 GiB** of weights, plus a KV cache that depends on architecture: **+2.6 to +8 GiB** at 128k context for the hybrid-attention models tested, **+18 GiB** for a conventional one. Measured **GPU-process** memory at 128k: **~23 GiB**; counting host RSS, the server took **~26–32 GiB** of the machine for the two Qwen models (§2.6). |
+| When is that memory taken? | **GPU-process memory: at launch.** It was flat from load to the end of every workload (±0.1 GiB): the server reserves the whole context pool up front, so `-c` sets that part. **Host RSS: it grows with use.** It rose from 0.8–1.3 GiB to 2.6–6.7 GiB and did not fall back (cause not isolated; consistent with the server's prompt cache). Budget both. |
+| What decides generation speed? | For the configurations tested, **memory bandwidth ÷ bytes streamed per token** is the main limit. Predicted from a measured 216–243 GB/s streaming-kernel read bandwidth, the dense models landed at **78–109%** of prediction (median 93%). A first-order guide, not an exact predictor. This is about *speed*: capacity still decides what fits, how much context you can configure, and how many models stay resident. |
 | What decides prompt-processing speed? | **Compute** (~45–55 TFLOP/s effective). Roughly `23,000 ÷ params(B)` tokens/s for dense models. |
 | Dense 27B vs MoE 35B-A3B (4-bit) | The MoE is **5.3× faster at generation** (67.7 vs 12.8 tok/s) and **2.8× faster at prompt processing**, with a file 35% bigger. |
 | Does quantizing hurt? | On wikitext-2 perplexity: Q8_0 **+0.29%**, Q4_K_M **+0.94%** vs BF16 (Qwen3-8B); Q4_K_M **+0.80%** vs Q8_0 (Gemma 3 12B). Perplexity only, not task quality. |
-| How many users can it serve? | Far fewer than aggregate throughput suggests. With 4 slots and a stated SLO, the 35B-A3B served **~0.2–0.4 chat requests/s** and the dense 27B **~0.05–0.1 requests/s**. SLO-compliant output was **~40% of the batched-benchmark aggregate**. |
+| How many users can it serve? | Far fewer than aggregate throughput suggests. With 4 slots and a stated SLO, a **preliminary** capacity bracket (§4.3 gives trials and spread) is **about 0.2–0.4 configured chat requests/s** for the 35B-A3B (every valid trial passed at 0.2, outcomes were mixed at 0.25–0.35, all failed at 0.4; by realized rate the boundary fell near 0.3 req/s) and **about 0.05–0.075** for the dense 27B (passed at 0.05 with P95 TTFT of 1.7–1.8 s against a 2 s limit, failed at 0.075). These are brackets from 3–4 trials per rate, not precise maxima. SLO-compliant output was **~40% of the batched-benchmark aggregate** (single-run comparison). |
 | Do long prompts hurt other users? | Yes. At 0.08 long-context req/s the 35B-A3B's P95 inter-token latency went from 87 ms to **1.2 s** for everyone. |
 
 ![Generation speed](images/01_generation_speed.png)
@@ -32,7 +32,7 @@
 | Software | `llama.cpp` commit `10a60cf` (clean tree, CUDA 13.0, arch 121, Release), driver 580.173.02. Full record in [`raw2/environment.txt`](raw2/environment.txt). |
 | Flags | `-fa 1 -ngl 99`, same as the production server. |
 
-**Unified memory** means "GPU memory" and "system RAM" are one pool, so a model can use nearly all 121 GiB (far more than a consumer GPU), but streaming it is limited by the pool's bandwidth (§3). Capacity is plentiful; bandwidth is the constraint.
+**Unified memory** means "GPU memory" and "system RAM" are one pool, so a model can use nearly all 121 GiB (far more than a consumer GPU), but streaming it is limited by the pool's bandwidth (§3). For *generation speed* on the configurations tested, bandwidth is the bottleneck, not capacity. Capacity still decides which models fit, how much context you can configure and how many models can stay resident together (§2, §4.3: with three production models resident, the machine was at ~89–93 GiB of 121.7 GiB).
 
 | Model | Type | Quant | Params (B) | File (GiB) | Bits/weight |
 |---|---|---|---:|---:|---:|
@@ -52,8 +52,21 @@
 ## 2. Where the memory goes
 
 ```
-memory ≈ weights + KV cache + buffers/overhead        (all reserved at launch)
+GPU-process memory ≈ weights + KV-cache pool + compute buffers      (reserved at launch)
+system memory used ≈ GPU-process memory + host RSS                  (RSS grows with use)
 ```
+
+Five different numbers get called "the memory", and they are not interchangeable. This post keeps them apart:
+
+| Term | What it is | How it is obtained |
+|---|---|---|
+| **Weights** | The model's tensors | GGUF file size (MEASURED) or `params × bits / 8` (THEORETICAL) |
+| **KV-cache allocation** | The context pool reserved at launch, `-c × bytes per token` | Formula from GGUF headers (THEORETICAL), slope checked in §2.4 |
+| **Inference-process (GPU) memory** | Weights + KV pool + compute buffers, as `nvidia-smi` attributes to the process. On unified memory this is *not* isolated VRAM | MEASURED (§2.4, §2.6) |
+| **Host RSS** | Resident host memory of the server process (runtime, prompt cache). Starts at ~1 GiB and **grows with use** | MEASURED (§2.6) |
+| **Total system consumption** | Increase in the machine's "used" memory (`free`) while the server runs | MEASURED (§2.6); includes anything else on the machine |
+
+Worked example from §2.6 for Qwen3.6 35B-A3B at 131k context: weights 20.6 GiB + KV pool ≈ 2.6 GiB ≈ 23.2 GiB, against a measured GPU-process 23.3 GiB; host RSS grew to 3.3 GiB; total system consumption peaked at +26.2 GiB. For the dense Qwen3.8 27B the same three figures were 23.4, 6.7 and +31.6 GiB. **Quoting only the GPU-process number understates what the server takes from the machine by 3–8 GiB.**
 
 ### 2.1 Weights (THEORETICAL, confirmed by file sizes)
 
@@ -121,7 +134,7 @@ Round 1 gave one number per configuration. Round 2 samples memory every 0.5 s th
 
 What the data shows:
 
-- **Memory is reserved at launch, not consumed by traffic.** GPU process memory rose in two steps during load (weights first, then KV cache and compute buffers) and then stayed flat to within 0.1 GiB through every workload, including the 130k-token request. Sizing is therefore decided by `-c` and the model, not by how busy the server is.
+- **GPU-process memory is reserved at launch, not consumed by traffic.** It rose in two steps during load (weights first, then KV cache and compute buffers) and then stayed flat to within 0.1 GiB through every workload, including the 130k-token request. That part is decided by `-c` and the model, not by how busy the server is. It is **not** the whole cost: see the next bullet.
 - **Host memory does grow with use.** Process RSS started at 0.8–1.3 GiB and ended at 2.6–6.7 GiB, and did not fall after the work finished. That is consistent with the server's host-side prompt cache (`--cache-ram`, default 8192 MiB per the server's own help text), but I did not isolate the cause. Budget a few GiB of host memory per server on top of the GPU figure.
 - **On this unified-memory system the two counters add up.** GPU-process memory plus RSS matched the machine-wide increase in "used" memory within 1.5 GiB for all four models, so they do not double-count.
 - **No real memory pressure here, but not zero.** Minimum available memory stayed at about 32 GiB or more and the kernel's memory-pressure indicator (PSI) peaked at 3.0–4.3% during model load, then fell to 0. The machine also had ~10.5 GiB of swap in use before every run, from other workloads, and it barely moved.
@@ -171,6 +184,17 @@ Round 1 *inferred* a bandwidth from throughput, which is circular. Round 2 **mea
 {{T:Memory-bandwidth microbenchmark}}
 
 Read bandwidth is **~243 GB/s on small buffers, falling to ~216 GB/s at 16 GiB**, i.e. 79–89% of the published 273 GB/s peak (THEORETICAL, from the spec sheet, not verified here). Writes reach about 193 GB/s. At 16 GiB, one iteration dropped to 83 GB/s; it is kept in the data, since no exclusion rule was defined in advance. This is a *simple streaming kernel*, an estimate of what a well-behaved kernel can pull, not the access pattern of llama.cpp's matrix kernels.
+
+**Four different "bandwidths" appear in this section; they are not interchangeable:**
+
+| Term | Value here | Status |
+|---|---|---|
+| Theoretical peak | 273 GB/s | Spec sheet; not verified here |
+| Measured streaming-kernel bandwidth | ~243 GB/s (small buffers) to ~216 GB/s (16 GiB) read | MEASURED with `membw.cu`, a simple kernel, not llama.cpp's kernels |
+| Inferred effective bandwidth | observed tok/s × bytes streamed per token | DERIVED; it is only as good as the bytes-per-token estimate and includes every non-bandwidth cost |
+| Actual LLM throughput | tok/s from `llama-bench` | MEASURED |
+
+The prediction compares the third and fourth against the second. The ratio is a model-fit check, not a hardware measurement: where it falls short (small models, Q4_K kernels) the gap is overhead or kernel efficiency, not a lower bandwidth ceiling.
 
 **Bytes streamed per token (DERIVED from the GGUF tensor table).** Almost all weights are read once per token. The exception is the token-embedding table: only one row is looked up, unless the output head is *tied* to it (as in Gemma 3), in which case it is read in full. Excluding the embedding table saves 4–8% for untied models.
 
@@ -253,7 +277,9 @@ Batching decode is nearly free because decode is limited by *reading weights*, w
 | long | 8,000 / 16,000 / 24,000 | 100 / 300 / 600 |
 | mixed | 80% chat + 20% long | |
 
-**SLOs, fixed before running and not tuned to results.** chat: P95 TTFT ≤ 2 s *and* P95 ITL ≤ 100 ms *and* zero failures. long and mixed: P95 TTFT ≤ 60 s *and* P95 ITL ≤ 200 ms *and* zero failures. A rate is judged only if ≥ 20 requests completed.
+**SLOs, fixed before running and not tuned to results.** chat: P95 TTFT ≤ 2 s *and* P95 ITL ≤ 100 ms *and* zero failures. long and mixed: P95 TTFT ≤ 60 s *and* P95 ITL ≤ 200 ms *and* zero failures. A run is judged only if ≥ 20 requests completed.
+
+**Repeats.** The first sweep used one run (seed 1) per rate. A follow-up (`bench_latency_repeat.sh`, same server flags and SLOs, fresh server) added seeds 1–4 at 0.2–0.4 req/s for the 35B-A3B (intermediate rates 0.25, 0.3, 0.35) and at 0.05–0.1 req/s for the 27B (intermediate rate 0.075). The seed sets arrival times, prompt/output lengths and prompt offsets, so trials with different seeds are independent. All 28 follow-up attempts completed; none failed to produce a summary (manifest: [`raw2/latency_rep/manifest.tsv`](raw2/latency_rep/manifest.tsv)). The original single runs are unchanged and count as seed 1 where applicable.
 
 ![Chat latency](images/10_latency_chat.png)
 
@@ -265,19 +291,34 @@ Batching decode is nearly free because decode is limited by *reading weights*, w
 
 {{T:Load test: mixed}}
 
-{{T:Highest tested rate}}
+{{T:Per-rate results}}
+
+{{T:Capacity bracket}}
+
+![Chat P95 TTFT by realized rate](images/11_latency_vs_realized.png)
+
+{{T:Outcome versus realized}}
 
 What it shows:
 
-- **Interactive capacity is much lower than aggregate throughput implies.** The 35B-A3B passed the chat SLO at the lowest rate (P95 TTFT 0.94 s) and failed at the next (15.1 s). The dense 27B passed at 0.05 req/s and failed at 0.1 (P95 TTFT 29 s). Capacity under this SLO therefore lies between the two tested rates for each: roughly **0.2–0.4 req/s** (35B-A3B) and **0.05–0.1 req/s** (27B). I tested few rates, so the resolution is coarse.
-- **The SLO-compliant output rate was ~40% of the batched aggregate.** The highest passing chat runs carried 62 tok/s (35B-A3B) and 15.7 tok/s (27B), against 155 and 43 tok/s aggregate at 4 streams in §4.2. Queueing for one of only 4 slots, and variance in arrival and output length, consume the rest.
-- **The failure mode is queueing, not slow decoding.** P95 ITL stayed flat (32–35 ms for the MoE) while TTFT climbed from under a second to over a minute.
-- **The dense 27B sits at the edge of a 10 tok/s-per-user target.** Its P95 ITL was 97–100 ms even at light load (4 streams share one weight read).
+- **Interactive capacity is much lower than aggregate throughput implies, and the boundary is a region, not a point.** For the 35B-A3B, every trial with a verdict passed the chat SLO at a configured 0.2 req/s (3 valid trials, P95 TTFT 0.69–0.94 s) and all 4 failed at 0.4 (2.3–15.1 s); at 0.25, 0.3 and 0.35 the outcome depended on the seed (3, 2 and 2 of 4 passed). For the dense 27B, all 3 valid trials passed at 0.05 (P95 TTFT 1.68–1.84 s, close to the 2 s limit) and all 3 failed at 0.075 (2.02–10.1 s; the best of those missed the limit by 0.02 s) and at 0.1. Capacity is therefore bracketed at roughly **0.2–0.4 req/s** (35B-A3B) and **0.05–0.075 req/s** (27B), configured. These are preliminary brackets from 3–4 trials per rate, not precise maxima, and with trials this few no confidence interval is claimed.
+- **Why outcomes are mixed: the realized rate varies a lot between short windows.** A configured 0.2 req/s produced between 16 and 40 arrivals in 150 s (0.107–0.267 req/s). Re-sorting the 35B-A3B runs by *realized* rate separates them cleanly: the highest passing run was at 0.293 req/s and the lowest failing at 0.300 (21 runs with a verdict, none overlapping). The 27B likewise separates between 0.064 (pass) and 0.075 (fail) (11 runs). This reading was formed after seeing the data and holds only for these window lengths (a longer window lets a queue grow further), so treat it as a description of what happened, not a tested threshold.
+- **The SLO-compliant output rate was roughly 40% of the batched aggregate.** The highest-throughput passing chat trials carried 66 tok/s (35B-A3B) and 15.7 tok/s (27B), against 155 and 43 tok/s aggregate at 4 streams in §4.2 (43% and 37%). Queueing for one of only 4 slots, and variance in arrival and output length, consume the rest. The batched figures are single runs (§4.2).
+- **The failure mode is queueing, not slow decoding.** P95 ITL stayed flat (21–35 ms for the MoE across all chat trials) while P95 TTFT climbed from under a second to about two minutes.
+- **The dense 27B sits at the edge of a 10 tok/s-per-user target.** Its P95 ITL was 90–100 ms even at light load (4 streams share one weight read).
 - **Long prompts stall everyone.** For the 35B-A3B, P95 ITL rose from 87 ms at 0.05 long req/s to **1.17 s** at 0.08, while the median stayed at 37 ms: long prefills occupy the GPU and delay other users' decoding. TTFT P95 went from 44 s (pass) to 153 s; at 0.12 req/s, 14 of 55 requests had not finished when the test stopped.
 - **27B long-context: no verdict.** At its slow capacity (about one 16k request every ~50 s per slot) even 400 s yields too few completions for percentiles. At 0.03 req/s, 8 of 19 requests were unfinished at the end, which is itself informative.
 - **The mixed point is one run, not a capacity limit.** The 35B-A3B passed its (lenient) SLO at 0.3 req/s (P95 TTFT 26 s).
 
-**Limits of this measurement.** One run and one random seed per rate, so the realized arrival rate differs from the target (e.g. 40 requests arrived in the "0.2 req/s" run, i.e. 0.267 req/s; the tables show the realized rate). Only 4 slots were tested; more slots change the picture. The other two production models were resident but idle, so "peak system used" in the tables is machine-wide (~89–93 GiB) and not a per-server figure. Queue wait is not observable separately; it is inside TTFT.
+**Limits of this measurement.**
+
+- **Few trials.** 3–4 trials per chat rate near the boundary (1 elsewhere); one run for the long and mixed profiles. The long and mixed results are single runs and are not capacity limits.
+- **Trials without a verdict.** One of four seeds (seed 3) drew only 16 arrivals at the 27B's rates and at the 35B's 0.2 req/s, so it has fewer than the 20 completions required and is excluded from pass counts (shown as n<20). This reduces the 27B's evidence to 3 valid trials per rate.
+- **Shared seeds across rates.** The same seed gives the same arrival pattern and request lengths, only stretched in time, so trials at different rates with the same seed are correlated (an advantage for comparing rates, but the cross-rate trials are not independent). Independence holds across seeds.
+- **Configured versus realized rate.** Short Poisson windows realize rates far from the target (see the tables); the realized rate, not the configured one, tracked pass/fail.
+- **Two sessions and unequal windows.** The original sweep and the repeats ran in different server instances. The 27B at 0.05 req/s ran 420 s in the original sweep and 600 s in the repeats, to carry enough requests for percentiles.
+- **Only 4 slots were tested;** more slots change the picture. The other two production models were resident but idle, so "peak system used" in the tables is machine-wide (~89–93 GiB) and not a per-server figure.
+- **Queue wait is not observable separately;** it is inside TTFT. P95 over 20–60 requests is itself noisy.
 
 ### Power and thermals
 
@@ -300,13 +341,13 @@ Perplexity on the wikitext-2 test set (SHA-256 `173c87a5…`), 2048-token window
 
 ## 6. Recommendations
 
-1. **Budget memory as weights + KV cache + a few GiB of host cache.** Weights from `params × bits / 8`; KV from `layers × kv_heads × head_dim × 4 bytes` per token (f16) times the total context you configure, because it is reserved at launch (§2.6).
+1. **Budget memory as weights + KV cache (GPU process) + host RSS (a few GiB, measured 2.6–6.7 GiB after use) + whatever else shares the machine.** Weights from `params × bits / 8`; KV from `layers × kv_heads × head_dim × 4 bytes` per token (f16) times the total context you configure, because it is reserved at launch (§2.6).
 2. **Check the architecture before choosing a context length.** Hybrid-attention models make 128k contexts cheap; conventional ones can make long context cost more than the weights.
-3. **For interactive use on bandwidth-limited hardware, prefer MoE.** The 35B-A3B gave 5× the generation speed of the dense 27B, and its interactive capacity under the same SLO was several times higher. Use dense models when you need them and plan for ~13 tok/s.
+3. **For interactive use on bandwidth-limited hardware, prefer MoE.** The 35B-A3B gave 5× the generation speed of the dense 27B, and its configured-rate bracket under the same SLO (0.2–0.4 vs 0.05–0.075 req/s) was roughly 3–8× higher. Use dense models when you need them and plan for ~13 tok/s.
 4. **4-bit is the sweet spot for speed per byte, with a small measured perplexity cost.** On Qwen3-8B, BF16 → Q8_0 → Q4_K_M ran at 15.5 → 29.1 → 44.0 tok/s for +0.29% and +0.94% perplexity. Q8_0 on Gemma 12B used 1.7× the memory for 1.6× slower generation than Q4_K_M. Verify on your task.
 5. **Do not size a deployment from aggregate throughput.** Batching raises total tokens/s 3–5×, but the number of users you can serve at a latency target was about 40% of that, and long prompts degrade everyone's inter-token latency. Define an SLO and load-test with arrivals like yours (`scripts/load_test.py`).
 6. **Isolate long-context traffic, or cap prompt length.** Mixed long and short requests share the GPU, and a pool-sized request can crowd out others (§2.6).
-7. **Capacity is not the constraint on this hardware, bandwidth is.** A 121 GiB pool lets several models stay resident, but faster decode needs more bandwidth, not more RAM.
+7. **For generation speed, bandwidth is the main limit here; for what you can run at all, capacity still matters.** More RAM would not make the tested models decode faster, but the 121 GiB pool bounds model size, configured context (KV pool), concurrency (shared pool, §2.6) and how many models stay resident (~89–93 GiB used with three production models loaded). Plan both.
 8. **KV-cache quantization saves 19–33% total memory on Gemma 3 12B at 128k**, but evaluate quality first.
 
 ---
@@ -325,7 +366,7 @@ Everything is reproducible from [`scripts/`](scripts/) and the raw output in [`r
 | Quantization ladder | `llama-bench` | Qwen3-8B BF16/Q8_0/Q4_K_M, 5 repetitions, per-run samples kept in `raw2/ladder/` |
 | Perplexity | `bench_perplexity.sh` | wikitext-2 test set, 2048-token windows |
 | Memory lifecycle | `memory_lifecycle.py`, `bench_memory_lifecycle.sh` | 0.5 s sampling; every request validated |
-| Serving capacity | `load_test.py`, `bench_latency.sh` | open-loop Poisson arrivals, rate sweep, SLOs fixed in advance |
+| Serving capacity | `load_test.py`, `bench_latency.sh`, `bench_latency_repeat.sh` | open-loop Poisson arrivals, rate sweep, SLOs fixed in advance; repeats with seeds 1–4 and intermediate rates |
 
 **Conditions.** Round 1 ran with the two production models unloaded (baseline 12.5 GiB used). Round 2 ran with them loaded but idle (baseline ~59 GiB used, GPU at 0%), since the machine was shared. Absolute throughput could differ between rounds; see the prompt-speed caveat in §3.1.
 
@@ -342,7 +383,7 @@ Everything is reproducible from [`scripts/`](scripts/) and the raw output in [`r
 - `llama-bench` uses synthetic tokens at batch size 1. Real servers add sampling and scheduling overhead.
 - **No task-quality evaluation.** Perplexity covers one corpus and a few quantizations.
 - Bandwidth is measured with a simple kernel and is not a hardware counter reading. MoE bytes per token are inferred.
-- Round-1 memory and batched-concurrency points are single runs. The round-2 memory lifecycle is one run per model; the load test is one run and one seed per rate. Few rates were tested, so capacity points are brackets, not precise values.
+- Round-1 memory and batched-concurrency points are single runs. The round-2 memory lifecycle is one run per model; the chat load tests have 3–4 valid trials per rate near the boundary and the long and mixed tests are single runs. Capacity points are brackets, not precise values.
 - `nvidia-smi` per-process memory on unified memory is not isolated VRAM; the GPU/host split is blurry, so differences under ~1 GiB should not be over-interpreted.
 - Gemma and gpt-oss were tested to 16k depth only; Qwen3 8B BF16 memory to 32k (its 128k KV figure is extrapolated).
 - Only 4 server slots and one runtime were tested. Results do not transfer to other GPUs or engines without testing.
