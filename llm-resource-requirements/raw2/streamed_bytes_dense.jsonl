@@ -1,0 +1,7 @@
+{"file": "gemma-3-4b-it-Q4_K_M.gguf", "tensor_bytes": 2483352832, "token_embd_bytes": 550636800, "output_head_tied": true, "streamed_bytes_per_token": 2483352832, "streamed_GiB": 2.313, "tensor_GiB": 2.313}
+{"file": "gemma3-12b-Q4_K_M.gguf", "tensor_bytes": 7294226304, "token_embd_bytes": 825955200, "output_head_tied": true, "streamed_bytes_per_token": 7294226304, "streamed_GiB": 6.793, "tensor_GiB": 6.793}
+{"file": "gemma3-12b-Q8_0.gguf", "tensor_bytes": 12503660544, "token_embd_bytes": 1069808640, "output_head_tied": true, "streamed_bytes_per_token": 12503660544, "streamed_GiB": 11.645, "tensor_GiB": 11.645}
+{"file": "Qwen3-8B-BF16.gguf", "tensor_bytes": 16382087168, "token_embd_bytes": 1244659712, "output_head_tied": false, "streamed_bytes_per_token": 15137427456, "streamed_GiB": 14.098, "tensor_GiB": 15.257}
+{"file": "Qwen3-8B-Q8_0.gguf", "tensor_bytes": 8703561728, "token_embd_bytes": 661225472, "output_head_tied": false, "streamed_bytes_per_token": 8042336256, "streamed_GiB": 7.49, "tensor_GiB": 8.106}
+{"file": "Qwen3-8B-Q4_K_M.gguf", "tensor_bytes": 5021827072, "token_embd_bytes": 350060544, "output_head_tied": false, "streamed_bytes_per_token": 4671766528, "streamed_GiB": 4.351, "tensor_GiB": 4.677}
+{"file": "Qwen3.8-27B-UD-Q4_K_M.gguf", "tensor_bytes": 16453443584, "token_embd_bytes": 715161600, "output_head_tied": false, "streamed_bytes_per_token": 15738281984, "streamed_GiB": 14.657, "tensor_GiB": 15.323}

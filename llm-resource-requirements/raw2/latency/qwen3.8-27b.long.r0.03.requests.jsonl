@@ -1,0 +1,11 @@
+{"kind": "long", "prompt_tokens": 10550, "output_tokens_requested": 264, "t_send": 4.810096979141235, "ok": true, "error": null, "ttft": 33.52693963050842, "e2e": 57.49421977996826, "chunks": 264, "itl_n": 263}
+{"kind": "long", "prompt_tokens": 12553, "output_tokens_requested": 383, "t_send": 8.095916032791138, "ok": true, "error": null, "ttft": 23.4079749584198, "e2e": 64.01400303840637, "chunks": 375, "itl_n": 374}
+{"kind": "long", "prompt_tokens": 24000, "output_tokens_requested": 263, "t_send": 85.32767510414124, "ok": true, "error": null, "ttft": 31.344874620437622, "e2e": 119.4200963973999, "chunks": 263, "itl_n": 262}
+{"kind": "long", "prompt_tokens": 17687, "output_tokens_requested": 600, "t_send": 128.4642391204834, "ok": true, "error": null, "ttft": 37.06373882293701, "e2e": 245.5199682712555, "chunks": 599, "itl_n": 598}
+{"kind": "long", "prompt_tokens": 10239, "output_tokens_requested": 576, "t_send": 137.21438932418823, "ok": true, "error": null, "ttft": 55.91704750061035, "e2e": 184.69871520996094, "chunks": 576, "itl_n": 575}
+{"kind": "long", "prompt_tokens": 9828, "output_tokens_requested": 579, "t_send": 144.06968784332275, "ok": true, "error": null, "ttft": 39.7990939617157, "e2e": 170.36902713775635, "chunks": 579, "itl_n": 578}
+{"kind": "long", "prompt_tokens": 24000, "output_tokens_requested": 297, "t_send": 167.69340133666992, "ok": true, "error": null, "ttft": 79.00011920928955, "e2e": 112.17749428749084, "chunks": 297, "itl_n": 296}
+{"kind": "long", "prompt_tokens": 9443, "output_tokens_requested": 463, "t_send": 197.33283710479736, "ok": true, "error": null, "ttft": 100.00275802612305, "e2e": 257.48551392555237, "chunks": 463, "itl_n": 462}
+{"kind": "long", "prompt_tokens": 20010, "output_tokens_requested": 351, "t_send": 212.58146834373474, "ok": true, "error": null, "ttft": 147.44979524612427, "e2e": 280.5625829696655, "chunks": 351, "itl_n": 350}
+{"kind": "long", "prompt_tokens": 13372, "output_tokens_requested": 342, "t_send": 237.11218333244324, "ok": true, "error": null, "ttft": 168.14667081832886, "e2e": 277.53593730926514, "chunks": 342, "itl_n": 341}
+{"kind": "long", "prompt_tokens": 17153, "output_tokens_requested": 124, "t_send": 243.26677656173706, "ok": true, "error": null, "ttft": 161.99127292633057, "e2e": 175.7493212223053, "chunks": 124, "itl_n": 123}

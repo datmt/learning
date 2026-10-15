@@ -1,0 +1,102 @@
+{
+ "model": "/data/engines/models/Qwen3.8-27B-UD-Q4_K_M.gguf",
+ "ctx_total": 131072,
+ "slots": 4,
+ "kv_type": "f16",
+ "baseline_sys_used_MiB": 59893,
+ "phase_seconds": {
+  "warmup": 1.5,
+  "prefill_long": 20.2,
+  "generation": 21.1,
+  "max_context": 228.7,
+  "concurrent": 238.2
+ },
+ "tokens": {
+  "prefill_long": 16384,
+  "max_context": 130672,
+  "concurrent_each": 32068
+ },
+ "phases": {
+  "baseline": {
+   "samples": 12,
+   "sys_used_MiB_peak": 59917,
+   "gpu_proc_MiB_peak": null,
+   "rss_MiB_peak": null,
+   "swap_used_MiB_peak": 10803,
+   "sys_avail_MiB_min": 64690,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "load": {
+   "samples": 34,
+   "sys_used_MiB_peak": 85256,
+   "gpu_proc_MiB_peak": 23930,
+   "rss_MiB_peak": 1313,
+   "swap_used_MiB_peak": 10851,
+   "sys_avail_MiB_min": 39351,
+   "psi_mem_some_avg10_max": 2.86
+  },
+  "idle_after_load": {
+   "samples": 19,
+   "sys_used_MiB_peak": 85470,
+   "gpu_proc_MiB_peak": 23930,
+   "rss_MiB_peak": 1345,
+   "swap_used_MiB_peak": 10851,
+   "sys_avail_MiB_min": 39137,
+   "psi_mem_some_avg10_max": 2.86
+  },
+  "warmup": {
+   "samples": 3,
+   "sys_used_MiB_peak": 85686,
+   "gpu_proc_MiB_peak": 23938,
+   "rss_MiB_peak": 1581,
+   "swap_used_MiB_peak": 10851,
+   "sys_avail_MiB_min": 38921,
+   "psi_mem_some_avg10_max": 1.05
+  },
+  "prefill_long": {
+   "samples": 38,
+   "sys_used_MiB_peak": 86196,
+   "gpu_proc_MiB_peak": 23946,
+   "rss_MiB_peak": 2039,
+   "swap_used_MiB_peak": 10851,
+   "sys_avail_MiB_min": 38411,
+   "psi_mem_some_avg10_max": 0.86
+  },
+  "generation": {
+   "samples": 38,
+   "sys_used_MiB_peak": 87565,
+   "gpu_proc_MiB_peak": 23948,
+   "rss_MiB_peak": 3367,
+   "swap_used_MiB_peak": 10851,
+   "sys_avail_MiB_min": 37042,
+   "psi_mem_some_avg10_max": 0.11
+  },
+  "max_context": {
+   "samples": 428,
+   "sys_used_MiB_peak": 87575,
+   "gpu_proc_MiB_peak": 23948,
+   "rss_MiB_peak": 3377,
+   "swap_used_MiB_peak": 10852,
+   "sys_avail_MiB_min": 37032,
+   "psi_mem_some_avg10_max": 0.54
+  },
+  "concurrent": {
+   "samples": 444,
+   "sys_used_MiB_peak": 86417,
+   "gpu_proc_MiB_peak": 23950,
+   "rss_MiB_peak": 3004,
+   "swap_used_MiB_peak": 10852,
+   "sys_avail_MiB_min": 38190,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "idle_after": {
+   "samples": 29,
+   "sys_used_MiB_peak": 86355,
+   "gpu_proc_MiB_peak": 23950,
+   "rss_MiB_peak": 3004,
+   "swap_used_MiB_peak": 10792,
+   "sys_avail_MiB_min": 38252,
+   "psi_mem_some_avg10_max": 0.0
+  }
+ }
+}

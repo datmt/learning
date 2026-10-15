@@ -1,0 +1,13 @@
+{"test":"read","buffer_GiB":0.06,"iters":20,"GBps_median":242.6,"GBps_max":245.5,"GBps_min":238.2,"GiBps_median":226.0}
+{"test":"write","buffer_GiB":0.06,"iters":20,"GBps_median":193.3,"GBps_max":194.9,"GBps_min":188.0,"GiBps_median":180.1}
+{"test":"copy","buffer_GiB":0.06,"iters":20,"GBps_median":219.9,"GBps_max":221.7,"GBps_min":217.3,"GiBps_median":204.8}
+{"test":"read","buffer_GiB":1.00,"iters":20,"GBps_median":236.8,"GBps_max":237.7,"GBps_min":235.2,"GiBps_median":220.5}
+{"test":"write","buffer_GiB":1.00,"iters":20,"GBps_median":193.0,"GBps_max":193.4,"GBps_min":174.0,"GiBps_median":179.8}
+{"test":"copy","buffer_GiB":1.00,"iters":20,"GBps_median":215.7,"GBps_max":216.5,"GBps_min":214.5,"GiBps_median":200.9}
+{"test":"read","buffer_GiB":4.00,"iters":20,"GBps_median":234.7,"GBps_max":236.1,"GBps_min":228.2,"GiBps_median":218.6}
+{"test":"write","buffer_GiB":4.00,"iters":20,"GBps_median":192.6,"GBps_max":192.8,"GBps_min":186.5,"GiBps_median":179.4}
+{"test":"copy","buffer_GiB":4.00,"iters":20,"GBps_median":217.2,"GBps_max":217.7,"GBps_min":213.2,"GiBps_median":202.3}
+{"test":"read","buffer_GiB":8.00,"iters":20,"GBps_median":233.1,"GBps_max":237.4,"GBps_min":221.7,"GiBps_median":217.1}
+{"test":"write","buffer_GiB":8.00,"iters":20,"GBps_median":191.7,"GBps_max":192.5,"GBps_min":184.1,"GiBps_median":178.5}
+{"test":"read","buffer_GiB":16.00,"iters":20,"GBps_median":215.9,"GBps_max":219.9,"GBps_min":83.0,"GiBps_median":201.0}
+{"test":"write","buffer_GiB":16.00,"iters":20,"GBps_median":191.6,"GBps_max":192.0,"GBps_min":188.2,"GiBps_median":178.4}

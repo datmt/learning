@@ -1,0 +1,32 @@
+# captured 2026-10-15T11:30:00+07:00
+## host
+Linux 6.17.0-1032-nvidia #32-Ubuntu SMP PREEMPT_DYNAMIC Wed Aug 19 17:40:46 UTC 2026 aarch64
+NVIDIA GB10, 580.173.02
+Cuda compilation tools, release 13.0, V13.0.88
+Build cuda_13.0.r13.0/compiler.36424714_0
+## llama.cpp (source tree used for ALL binaries, incl. the out-of-tree llama-perplexity build)
+commit 10a60cf303566e10d6a7a2774c17d2085503d87b
+ date Sat Oct 10 00:07:44 2026 +0200
+(no 'modified:' lines above = clean tree)
+## build config (original build dir)
+CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_CUDA_ARCHITECTURES:UNINITIALIZED=121
+CMAKE_CUDA_COMPILER:FILEPATH=/usr/local/cuda-13.0/bin/nvcc
+CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++
+GGML_CUDA:BOOL=ON
+GGML_CUDA_FA:BOOL=ON
+GGML_CUDA_GRAPHS:BOOL=ON
+GGML_NATIVE:BOOL=ON
+## cpu
+CPU(s):                                  20
+Model name:                              Cortex-X925
+CPU(s) scaling MHz:                      100%
+Model name:                              Cortex-A725
+CPU(s) scaling MHz:                      100%
+## server defaults relevant to memory
+--kv-unified-per-slot N                 context limit per parallel slot (default: unset, behavior unchanged).
+                                        when set without -c/--ctx-size, the shared KV pool is sized to
+--
+-cram, --cache-ram N                    set the maximum cache size in MiB (default: 8192, -1 - no limit, 0 -
+                                        disable)[(more
+--

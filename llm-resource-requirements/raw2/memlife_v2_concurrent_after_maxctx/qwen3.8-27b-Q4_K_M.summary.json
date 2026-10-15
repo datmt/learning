@@ -1,0 +1,165 @@
+{
+ "model": "/data/engines/models/Qwen3.8-27B-UD-Q4_K_M.gguf",
+ "ctx_total": 131072,
+ "slots": 4,
+ "kv_type": "f16",
+ "baseline_sys_used_MiB": 59112,
+ "phase_seconds": {
+  "warmup": 1.4,
+  "prefill_long": 20.2,
+  "generation": 21.0,
+  "max_context": 225.9,
+  "concurrent": 1.0
+ },
+ "tokens": {
+  "prefill_long": 16384,
+  "max_context": 130672,
+  "concurrent_each": 16084
+ },
+ "requests": [
+  {
+   "phase": "warmup",
+   "prompt_tokens_sent": 32,
+   "n_predict": 16,
+   "ok": true,
+   "tokens_evaluated": 32,
+   "tokens_predicted": 16
+  },
+  {
+   "phase": "prefill_long",
+   "prompt_tokens_sent": 16384,
+   "n_predict": 1,
+   "ok": true,
+   "tokens_evaluated": 16384,
+   "tokens_predicted": 1
+  },
+  {
+   "phase": "generation",
+   "prompt_tokens_sent": 64,
+   "n_predict": 256,
+   "ok": true,
+   "tokens_evaluated": 64,
+   "tokens_predicted": 256
+  },
+  {
+   "phase": "max_context",
+   "prompt_tokens_sent": 130672,
+   "n_predict": 64,
+   "ok": true,
+   "tokens_evaluated": 130672,
+   "tokens_predicted": 64
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 16084,
+   "n_predict": 128,
+   "ok": false,
+   "error": "{'code': 500, 'message': 'Context size has been exceeded.', 'type': 'server_error'}"
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 16084,
+   "n_predict": 128,
+   "ok": false,
+   "error": "{'code': 500, 'message': 'Context size has been exceeded.', 'type': 'server_error'}"
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 16084,
+   "n_predict": 128,
+   "ok": false,
+   "error": "{'code': 500, 'message': 'Context size has been exceeded.', 'type': 'server_error'}"
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 16084,
+   "n_predict": 128,
+   "ok": false,
+   "error": "{'code': 500, 'message': 'Context size has been exceeded.', 'type': 'server_error'}"
+  }
+ ],
+ "phases": {
+  "baseline": {
+   "samples": 12,
+   "sys_used_MiB_peak": 59136,
+   "gpu_proc_MiB_peak": null,
+   "rss_MiB_peak": null,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 65471,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "load": {
+   "samples": 34,
+   "sys_used_MiB_peak": 84479,
+   "gpu_proc_MiB_peak": 23930,
+   "rss_MiB_peak": 1351,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 40128,
+   "psi_mem_some_avg10_max": 2.89
+  },
+  "idle_after_load": {
+   "samples": 19,
+   "sys_used_MiB_peak": 84784,
+   "gpu_proc_MiB_peak": 23930,
+   "rss_MiB_peak": 1346,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 39822,
+   "psi_mem_some_avg10_max": 5.09
+  },
+  "warmup": {
+   "samples": 3,
+   "sys_used_MiB_peak": 84888,
+   "gpu_proc_MiB_peak": 23938,
+   "rss_MiB_peak": 1582,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 39719,
+   "psi_mem_some_avg10_max": 2.28
+  },
+  "prefill_long": {
+   "samples": 38,
+   "sys_used_MiB_peak": 85383,
+   "gpu_proc_MiB_peak": 23946,
+   "rss_MiB_peak": 2040,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 39224,
+   "psi_mem_some_avg10_max": 1.87
+  },
+  "generation": {
+   "samples": 38,
+   "sys_used_MiB_peak": 87884,
+   "gpu_proc_MiB_peak": 23948,
+   "rss_MiB_peak": 3367,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 36723,
+   "psi_mem_some_avg10_max": 0.25
+  },
+  "max_context": {
+   "samples": 423,
+   "sys_used_MiB_peak": 87180,
+   "gpu_proc_MiB_peak": 23948,
+   "rss_MiB_peak": 2688,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 37427,
+   "psi_mem_some_avg10_max": 0.03
+  },
+  "concurrent": {
+   "samples": 2,
+   "sys_used_MiB_peak": 86439,
+   "gpu_proc_MiB_peak": 23950,
+   "rss_MiB_peak": 2398,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 38168,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "idle_after": {
+   "samples": 28,
+   "sys_used_MiB_peak": 86201,
+   "gpu_proc_MiB_peak": 23950,
+   "rss_MiB_peak": 2099,
+   "swap_used_MiB_peak": 10855,
+   "sys_avail_MiB_min": 38406,
+   "psi_mem_some_avg10_max": 0.0
+  }
+ },
+ "all_requests_ok": false
+}

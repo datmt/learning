@@ -1,0 +1,102 @@
+{
+ "model": "/data/engines/models/gpt-oss-20b-MXFP4.gguf",
+ "ctx_total": 131072,
+ "slots": 4,
+ "kv_type": "f16",
+ "baseline_sys_used_MiB": 59127,
+ "phase_seconds": {
+  "warmup": 0.5,
+  "prefill_long": 3.9,
+  "generation": 3.5,
+  "max_context": 63.7,
+  "concurrent": 1.4
+ },
+ "tokens": {
+  "prefill_long": 16384,
+  "max_context": 130672,
+  "concurrent_each": 32068
+ },
+ "phases": {
+  "baseline": {
+   "samples": 12,
+   "sys_used_MiB_peak": 59136,
+   "gpu_proc_MiB_peak": null,
+   "rss_MiB_peak": null,
+   "swap_used_MiB_peak": 10792,
+   "sys_avail_MiB_min": 65471,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "load": {
+   "samples": 28,
+   "sys_used_MiB_peak": 75694,
+   "gpu_proc_MiB_peak": 14455,
+   "rss_MiB_peak": 1233,
+   "swap_used_MiB_peak": 10792,
+   "sys_avail_MiB_min": 48913,
+   "psi_mem_some_avg10_max": 0.18
+  },
+  "idle_after_load": {
+   "samples": 19,
+   "sys_used_MiB_peak": 75911,
+   "gpu_proc_MiB_peak": 14455,
+   "rss_MiB_peak": 1219,
+   "swap_used_MiB_peak": 10792,
+   "sys_avail_MiB_min": 48696,
+   "psi_mem_some_avg10_max": 0.18
+  },
+  "warmup": {
+   "samples": 1,
+   "sys_used_MiB_peak": 75876,
+   "gpu_proc_MiB_peak": 14499,
+   "rss_MiB_peak": 1431,
+   "swap_used_MiB_peak": 10792,
+   "sys_avail_MiB_min": 48731,
+   "psi_mem_some_avg10_max": 0.06
+  },
+  "prefill_long": {
+   "samples": 7,
+   "sys_used_MiB_peak": 75099,
+   "gpu_proc_MiB_peak": 14503,
+   "rss_MiB_peak": 1440,
+   "swap_used_MiB_peak": 10793,
+   "sys_avail_MiB_min": 49508,
+   "psi_mem_some_avg10_max": 0.41
+  },
+  "generation": {
+   "samples": 6,
+   "sys_used_MiB_peak": 75520,
+   "gpu_proc_MiB_peak": 14503,
+   "rss_MiB_peak": 1839,
+   "swap_used_MiB_peak": 10793,
+   "sys_avail_MiB_min": 49087,
+   "psi_mem_some_avg10_max": 0.34
+  },
+  "max_context": {
+   "samples": 119,
+   "sys_used_MiB_peak": 75520,
+   "gpu_proc_MiB_peak": 14503,
+   "rss_MiB_peak": 1738,
+   "swap_used_MiB_peak": 10793,
+   "sys_avail_MiB_min": 49087,
+   "psi_mem_some_avg10_max": 0.22
+  },
+  "concurrent": {
+   "samples": 2,
+   "sys_used_MiB_peak": 79184,
+   "gpu_proc_MiB_peak": 14503,
+   "rss_MiB_peak": 4573,
+   "swap_used_MiB_peak": 10793,
+   "sys_avail_MiB_min": 45423,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "idle_after": {
+   "samples": 29,
+   "sys_used_MiB_peak": 79425,
+   "gpu_proc_MiB_peak": 14503,
+   "rss_MiB_peak": 4575,
+   "swap_used_MiB_peak": 10793,
+   "sys_avail_MiB_min": 45182,
+   "psi_mem_some_avg10_max": 0.0
+  }
+ }
+}

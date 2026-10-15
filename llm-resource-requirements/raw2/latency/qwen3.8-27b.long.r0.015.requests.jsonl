@@ -1,0 +1,8 @@
+{"kind": "long", "prompt_tokens": 10550, "output_tokens_requested": 264, "t_send": 9.620349168777466, "ok": true, "error": null, "ttft": 30.674861431121826, "e2e": 54.74438762664795, "chunks": 264, "itl_n": 263}
+{"kind": "long", "prompt_tokens": 12553, "output_tokens_requested": 383, "t_send": 16.190709114074707, "ok": true, "error": null, "ttft": 22.81423783302307, "e2e": 58.19975709915161, "chunks": 375, "itl_n": 374}
+{"kind": "long", "prompt_tokens": 24000, "output_tokens_requested": 263, "t_send": 170.65464806556702, "ok": true, "error": null, "ttft": 31.296541213989258, "e2e": 53.83046364784241, "chunks": 263, "itl_n": 262}
+{"kind": "long", "prompt_tokens": 17687, "output_tokens_requested": 600, "t_send": 256.927485704422, "ok": true, "error": null, "ttft": 28.984644412994385, "e2e": 169.81533861160278, "chunks": 599, "itl_n": 598}
+{"kind": "long", "prompt_tokens": 10239, "output_tokens_requested": 576, "t_send": 274.42747831344604, "ok": true, "error": null, "ttft": 34.52771258354187, "e2e": 137.92066478729248, "chunks": 576, "itl_n": 575}
+{"kind": "long", "prompt_tokens": 9828, "output_tokens_requested": 579, "t_send": 288.1395800113678, "ok": true, "error": null, "ttft": 19.674028635025024, "e2e": 127.77220273017883, "chunks": 579, "itl_n": 578}
+{"kind": "long", "prompt_tokens": 24000, "output_tokens_requested": 297, "t_send": 335.38678216934204, "ok": true, "error": null, "ttft": 39.12482285499573, "e2e": 72.45472478866577, "chunks": 297, "itl_n": 296}
+{"kind": "long", "prompt_tokens": 9443, "output_tokens_requested": 463, "t_send": 394.6639699935913, "ok": true, "error": null, "ttft": 31.247299909591675, "e2e": 76.32625269889832, "chunks": 463, "itl_n": 462}

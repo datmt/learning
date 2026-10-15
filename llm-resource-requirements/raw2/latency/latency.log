@@ -1,0 +1,17 @@
+== qwen3.6-35b-a3b 10:03:47
+-- qwen3.6-35b-a3b chat rate=0.2 dur=150 10:04:12
+-- qwen3.6-35b-a3b chat rate=0.4 dur=150 10:06:47
+-- qwen3.6-35b-a3b chat rate=0.7 dur=150 10:09:19
+-- qwen3.6-35b-a3b chat rate=1.0 dur=150 10:13:22
+-- qwen3.6-35b-a3b long rate=0.05 dur=420 10:18:01
+-- qwen3.6-35b-a3b long rate=0.08 dur=420 10:25:28
+-- qwen3.6-35b-a3b long rate=0.12 dur=420 10:34:35
+-- qwen3.6-35b-a3b mixed rate=0.3 dur=240 10:44:32
+== qwen3.8-27b 10:48:51
+-- qwen3.8-27b chat rate=0.05 dur=420 10:49:14
+-- qwen3.8-27b chat rate=0.1 dur=300 10:56:36
+-- qwen3.8-27b chat rate=0.15 dur=200 11:02:08
+-- qwen3.8-27b chat rate=0.2 dur=150 11:06:54
+-- qwen3.8-27b long rate=0.015 dur=400 11:11:35
+-- qwen3.8-27b long rate=0.03 dur=400 11:19:26
+LATENCYDONE

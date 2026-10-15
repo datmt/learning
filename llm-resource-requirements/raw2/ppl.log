@@ -1,0 +1,11 @@
+== qwen3-8b-BF16 08:48:06
+2.02.430.786 I Final estimate: PPL = 8.5248 +/- 0.06452
+== qwen3-8b-Q8_0 08:50:09
+2.03.625.145 I Final estimate: PPL = 8.5499 +/- 0.06482
+== qwen3-8b-Q4_K_M 08:52:14
+1.55.218.396 I Final estimate: PPL = 8.6049 +/- 0.06504
+== gemma3-12b-Q8_0 08:54:10
+3.10.356.186 I Final estimate: PPL = 7.7891 +/- 0.05791
+== gemma3-12b-Q4_K_M 08:57:21
+2.57.422.572 I Final estimate: PPL = 7.8513 +/- 0.05803
+PPLDONE

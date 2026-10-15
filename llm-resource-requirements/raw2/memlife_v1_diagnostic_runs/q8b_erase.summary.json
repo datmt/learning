@@ -1,0 +1,217 @@
+{
+ "model": "/data/benchmarks/qwen3-8b-quants/Qwen3-8B-Q4_K_M.gguf",
+ "ctx_total": 32768,
+ "slots": 4,
+ "kv_type": "f16",
+ "baseline_sys_used_MiB": 59996,
+ "phase_seconds": {
+  "warmup": 0.4,
+  "prefill_long": 6.6,
+  "generation": 6.9,
+  "max_context": 19.3,
+  "concurrent": 21.7
+ },
+ "tokens": {
+  "prefill_long": 16384,
+  "max_context": 32368,
+  "concurrent_each": 7492
+ },
+ "requests": [
+  {
+   "phase": "warmup",
+   "prompt_tokens_sent": 32,
+   "n_predict": 16,
+   "ok": true,
+   "tokens_evaluated": 32,
+   "tokens_predicted": 16
+  },
+  {
+   "phase": "prefill_long",
+   "prompt_tokens_sent": 16384,
+   "n_predict": 1,
+   "ok": true,
+   "tokens_evaluated": 16384,
+   "tokens_predicted": 1
+  },
+  {
+   "phase": "generation",
+   "prompt_tokens_sent": 64,
+   "n_predict": 256,
+   "ok": true,
+   "tokens_evaluated": 64,
+   "tokens_predicted": 256
+  },
+  {
+   "phase": "max_context",
+   "prompt_tokens_sent": 32368,
+   "n_predict": 64,
+   "ok": true,
+   "tokens_evaluated": 32368,
+   "tokens_predicted": 64
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 7492,
+   "n_predict": 128,
+   "ok": true,
+   "tokens_evaluated": 7492,
+   "tokens_predicted": 128
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 7492,
+   "n_predict": 128,
+   "ok": true,
+   "tokens_evaluated": 7492,
+   "tokens_predicted": 128
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 7492,
+   "n_predict": 128,
+   "ok": true,
+   "tokens_evaluated": 7492,
+   "tokens_predicted": 128
+  },
+  {
+   "phase": "concurrent",
+   "prompt_tokens_sent": 7492,
+   "n_predict": 128,
+   "ok": true,
+   "tokens_evaluated": 7492,
+   "tokens_predicted": 128
+  }
+ ],
+ "slot_erase": [
+  {
+   "before": "warmup",
+   "status": [
+    501,
+    501,
+    501,
+    501
+   ]
+  },
+  {
+   "before": "prefill_long",
+   "status": [
+    501,
+    501,
+    501,
+    501
+   ]
+  },
+  {
+   "before": "generation",
+   "status": [
+    501,
+    501,
+    501,
+    501
+   ]
+  },
+  {
+   "before": "max_context",
+   "status": [
+    501,
+    501,
+    501,
+    501
+   ]
+  },
+  {
+   "before": "concurrent",
+   "status": [
+    501,
+    501,
+    501,
+    501
+   ]
+  }
+ ],
+ "erase_enabled": true,
+ "phases": {
+  "baseline": {
+   "samples": 12,
+   "sys_used_MiB_peak": 60034,
+   "gpu_proc_MiB_peak": null,
+   "rss_MiB_peak": null,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 64573,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "load": {
+   "samples": 4,
+   "sys_used_MiB_peak": 70270,
+   "gpu_proc_MiB_peak": 9390,
+   "rss_MiB_peak": 784,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 54337,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "idle_after_load": {
+   "samples": 19,
+   "sys_used_MiB_peak": 70451,
+   "gpu_proc_MiB_peak": 9390,
+   "rss_MiB_peak": 817,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 54156,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "warmup": {
+   "samples": 1,
+   "sys_used_MiB_peak": 70413,
+   "gpu_proc_MiB_peak": 9392,
+   "rss_MiB_peak": 841,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 54194,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "prefill_long": {
+   "samples": 12,
+   "sys_used_MiB_peak": 70537,
+   "gpu_proc_MiB_peak": 9400,
+   "rss_MiB_peak": 856,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 54070,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "generation": {
+   "samples": 13,
+   "sys_used_MiB_peak": 72772,
+   "gpu_proc_MiB_peak": 9400,
+   "rss_MiB_peak": 3163,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 51835,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "max_context": {
+   "samples": 36,
+   "sys_used_MiB_peak": 71765,
+   "gpu_proc_MiB_peak": 9400,
+   "rss_MiB_peak": 1956,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 52842,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "concurrent": {
+   "samples": 40,
+   "sys_used_MiB_peak": 75053,
+   "gpu_proc_MiB_peak": 9400,
+   "rss_MiB_peak": 5475,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 49554,
+   "psi_mem_some_avg10_max": 0.0
+  },
+  "idle_after": {
+   "samples": 29,
+   "sys_used_MiB_peak": 75117,
+   "gpu_proc_MiB_peak": 9400,
+   "rss_MiB_peak": 5475,
+   "swap_used_MiB_peak": 10795,
+   "sys_avail_MiB_min": 49489,
+   "psi_mem_some_avg10_max": 0.0
+  }
+ },
+ "all_requests_ok": true
+}

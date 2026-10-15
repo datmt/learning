@@ -11,24 +11,6 @@
 | Gemma 4 26B-A4B | MoE | Q4_K_M | 25.2 | 15.8 | 2,916 | 54.5 | 2,469 | 48.2 | – | – |
 | Qwen3.6 35B-A3B | MoE (hybrid) | Q4_K_M | 34.7 | 20.6 | 2,439 | 67.7 | 2,195 | 61.5 | 1,762 | 48.6 |
 
-### Effective memory bandwidth of dense models (file size × tokens/s)
-
-| Model | GiB read/token | tg (t/s) | Effective GiB/s |
-|---|---:|---:|---:|
-| Gemma 3 4B Q4_K_M | 2.3 | 74.1 | 171 |
-| Gemma 3 12B Q4_K_M | 6.8 | 27.4 | 186 |
-| Gemma 3 12B Q8_0 | 11.6 | 17.0 | 198 |
-| Qwen3 8B BF16 | 15.3 | 15.2 | 233 |
-| Qwen3.8 27B Q4_K_M | 15.3 | 12.8 | 195 |
-
-### MoE: implied bytes touched per token (peak bandwidth ÷ tg)
-
-| Model | File (GiB) | tg (t/s) | Implied GiB/token | % of file read per token |
-|---|---:|---:|---:|---:|
-| gpt-oss 20B MXFP4 | 11.3 | 81.3 | 2.86 | 25% |
-| Gemma 4 26B-A4B Q4_K_M | 15.8 | 54.5 | 4.27 | 27% |
-| Qwen3.6 35B-A3B Q4_K_M | 20.6 | 67.7 | 3.43 | 17% |
-
 ### Process memory (GiB) vs context, measured
 
 | Model | 4k | 32k | 128k | KV cost (KiB/token) |

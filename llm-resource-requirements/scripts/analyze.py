@@ -108,39 +108,7 @@ for ax, test, title in ((axes[0], "tg128", "Generation speed retained"), (axes[1
 axes[0].set_ylabel("% of empty-context speed")
 fig.tight_layout(); fig.savefig(os.path.join(IMG, "03_speed_vs_depth.png")); plt.close(fig)
 
-# fig 4: bandwidth roofline. dense: bytes/token = file size; implied bandwidth = size * tg
-dense = [k for k in MODELS if MODELS[k][1].startswith("dense")]
-bw = {k: speed[k]["size"] * speed[k]["t"][("tg128", 0)][0] for k in dense}
-peak = max(bw.values())
-OFFS = {'gemma-3-4b-Q4_K_M': (-70, -14), 'gpt-oss-20b-MXFP4': (4, 9), 'qwen3.6-35B-A3B-Q4_K_M': (8, -3), 'gemma-4-26B-A4B-Q4_K_M': (8, -10),
-        'qwen3-8b-BF16': (8, 6), 'qwen3.8-27b-Q4_K_M': (8, -12), 'gemma3-12b-Q8_0': (-50, 8)}
-fig, ax = plt.subplots(figsize=(8, 4.8))
-xs = [0.5, 40]
-for frac, ls in ((1.0, "-"), (0.75, ":")):
-    ax.plot(xs, [peak * frac / x for x in xs], color="gray", ls=ls, lw=1)
-ax.text(1.0, peak / 1.0 * 1.06, f"{peak:.0f} GiB/s (best dense result)", color="gray", fontsize=8)
-for k in MODELS:
-    label, kind, quant = MODELS[k]
-    tg = speed[k]["t"][("tg128", 0)][0]
-    # for MoE the x-axis is the implied bytes read per token = peak / tg
-    x = speed[k]["size"] if kind.startswith("dense") else peak / tg
-    ax.scatter([x], [tg], color=COLORS[kind], s=60, zorder=3, marker="o" if kind.startswith("dense") else "D")
-    off = OFFS.get(k, (6, 4))
-    ax.annotate(f"{label} {quant}", (x, tg), textcoords="offset points", xytext=off, fontsize=7)
-ax.set_xscale("log"); ax.set_yscale("log")
-ax.set_xlabel("GiB read per generated token  (dense: file size; MoE: implied from speed, diamonds)")
-ax.set_ylabel("generation tokens/s")
-ax.set_title("Decode is memory-bandwidth bound: speed ≈ bandwidth ÷ bytes per token")
-fig.tight_layout(); fig.savefig(os.path.join(IMG, "04_bandwidth_roofline.png")); plt.close(fig)
-bwrows = [[f"{MODELS[k][0]} {MODELS[k][2]}", f"{speed[k]['size']:.1f}", f"{speed[k]['t'][('tg128', 0)][0]:.1f}", f"{bw[k]:.0f}"] for k in dense]
-tables.append("### Effective memory bandwidth of dense models (file size × tokens/s)\n\n" + md(["Model", "GiB read/token", "tg (t/s)", "Effective GiB/s"], bwrows))
-moerows = []
-for k in MODELS:
-    if not MODELS[k][1].startswith("dense"):
-        tg = speed[k]["t"][("tg128", 0)][0]
-        moerows.append([f"{MODELS[k][0]} {MODELS[k][2]}", f"{speed[k]['size']:.1f}", f"{tg:.1f}", f"{peak / tg:.2f}", f"{peak / tg / speed[k]['size'] * 100:.0f}%"])
-tables.append("### MoE: implied bytes touched per token (peak bandwidth ÷ tg)\n\n" + md(
-    ["Model", "File (GiB)", "tg (t/s)", "Implied GiB/token", "% of file read per token"], moerows))
+# (bandwidth validation now lives in analyze_extra.py, using a measured microbenchmark instead of an inferred ceiling)
 
 # ---------------------------------------------------------------- memory
 mem = list(csv.DictReader(open(os.path.join(RAW, "memory.csv"))))

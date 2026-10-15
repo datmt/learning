@@ -1,0 +1,28 @@
+{
+ "profile": "long",
+ "rate_req_s": 0.03,
+ "duration_s": 400.0,
+ "seed": 1,
+ "scheduled": 19,
+ "completed": 11,
+ "failed": 8,
+ "errors": {
+  "unfinished_at_end": 8
+ },
+ "wall_s": 562.9,
+ "completed_req_s": 0.0275,
+ "input_tok_s": 422.1,
+ "output_tok_s": 10.6,
+ "percentiles_valid": false,
+ "ttft_s_p50": null,
+ "ttft_s_p95": null,
+ "ttft_s_p99": null,
+ "itl_s_p50": 0.1116,
+ "itl_s_p95": 0.2341,
+ "itl_s_p99": 3.4932,
+ "e2e_s_p50": null,
+ "e2e_s_p95": null,
+ "e2e_s_p99": null,
+ "peak_system_used_MiB": 94149,
+ "peak_server_gpu_MiB": 23959
+}
