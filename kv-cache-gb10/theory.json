@@ -37,8 +37,8 @@
   "model": "Qwen3.8-27B (dense, hybrid)",
   "arch": "qwen35",
   "layers": 65,
-  "kv_layers": 17,
-  "global_layers": 17,
+  "kv_layers": 16,
+  "global_layers": 16,
   "swa_layers": 0,
   "kv_heads": [
    4
@@ -46,7 +46,7 @@
   "key_len": 256,
   "val_len": 256,
   "window": null,
-  "global_bytes_per_token": 69632,
+  "global_bytes_per_token": 65536,
   "swa_bytes_per_token_until_window": 0,
   "swa_const_bytes_at_window": 0
  },

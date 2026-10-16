@@ -83,3 +83,8 @@ Plan: `PLAN.md`. Status: Phase 0 done. Phases 1 and 2 data collected and analyse
 - `README.template.md` -> `README.md` via `scripts/build_readme.py .` (injects `{{F:tables/x.md}}` verbatim; 11 tables). Sections: KV explainer, models/architecture table (Experiment B, Gemma4 theory-only), theory formula, memory vs context, speed vs context, KV quantisation, concurrency + 500 error, guidance, limits, reproduce.
 - Not yet done: user review; fact-check pass of every sentence against tables; publish to datmt/learning (`kv-cache-gb10/`) only after review. Links `../blog/...` in README must be fixed or the folders published together.
 - Prod models loaded, nothing running.
+
+## Review round 1 (external comment), 2026-10-16 — local only, NOT yet pushed
+- 27B 16-vs-17 resolved: 17th `attn_k` is the unused MTP block 64 (`nextn_predict_layers=1`, log "n_layer=64, n_layer_all=65", "unused tensor blk.64.nextn"). `kv_theory.py` now excludes trailing nextn layers; theory.json/phase1 table regenerated, all 5 models match.
+- Added `scripts/analyze_phase4_extra.py` -> `tables/phase4_latency.md` (TTFT min/median/max, aggregate prefill and total tok/s) and `phase4_operating_points.md`; README §7.1/§8 updated (quick picks, aggregate throughput falls with N at long context).
+- NOT done (needs GPU, ask first): repeats of concurrency points (n=1), a different prefill/batch setting to separate capacity from scheduler effects.

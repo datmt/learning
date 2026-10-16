@@ -10,13 +10,14 @@ The weights of a model are a fixed price. The **KV cache** is the variable price
 
 | Question | Answer (GB10, `llama.cpp`, f16 KV unless stated) |
 |---|---|
-| How big is the cache per token? | Qwen3-8B **144 KiB**, Qwen3.8-27B **64 KiB**, Gemma3-12B **64 KiB** (global layers), gpt-oss-20b **24 KiB**, Qwen3.6-35B-A3B **20 KiB**. MEASURED, and equal to the formula (§3) for four of five models. |
+| How big is the cache per token? | Qwen3-8B **144 KiB**, Qwen3.8-27B **64 KiB**, Gemma3-12B **64 KiB** (global layers), gpt-oss-20b **24 KiB**, Qwen3.6-35B-A3B **20 KiB**. MEASURED, and equal to the formula (§3) for all five. |
 | What sets it? | Number of layers that *have* a KV cache × KV heads × head size × bytes per value. **Not** total parameters, MoE or not. A 35B MoE needs 7× less than an 8B dense model. |
 | Cache at 128K tokens | 35B-A3B **2.5 GiB**, gpt-oss-20b **3.0 GiB**, 27B **8.0 GiB**, Gemma3-12B **8.0 GiB**; Qwen3-8B would need 18 GiB (DERIVED; its trained limit is 40K, measured 4.5 GiB at 32K). |
 | When is the memory taken? | **At server start**, for the whole context size `-c`, whether or not anyone uses it (§4). |
 | Does long context slow generation? | Decode speed falls to **58–70%** (Qwen hybrids) and **51%** (Gemma3, gpt-oss) of its 4K value at 128K. Prompt processing also slows. |
 | Does quantising the cache help? | `q8_0` saves **46.9%** and `q4_0` **71.9%** of cache memory (MEASURED). Perplexity change: **≤ +0.14%** (q8_0) and **≤ +0.64%** (q4_0); needle-in-haystack accuracy unchanged. But exact output text diverges (§6). |
 | How many users fit? | Memory is rarely the limit; **latency is.** 8 users × 64K on the 27B fit in 54 GiB peak but the mean time-to-first-token was **810 s** (§7). |
+| Is more concurrency worth it? | At short context, yes: 27B at 4K goes from 345 to 590 tok/s aggregate (1 → 8 users). At long context, no: 27B at 64K falls from 654 to **298** tok/s and the worst wait reaches 29 min (§7.1, DERIVED from one run per point). |
 | Why did I get "context size exceeded"? | Reproduced when in-flight requests need more cells than the unified pool holds (§7.2). |
 
 ![KV allocated vs prompt tokens](images/phase1_memory_vs_context.png)
@@ -45,7 +46,7 @@ Consequences you can feel:
 | Model | Design | Params | Layers | Layers with KV | Q / KV heads | Head size (K=V) | Window |
 |---|---|---|---:|---:|---|---:|---|
 | Qwen3-8B (BF16) | dense, full attention (GQA) | 8B | 36 | 36 | 32 / 8 | 128 | none |
-| Qwen3.8-27B (Q4_K_M) | dense, **hybrid** (attention + recurrent) | 27B | 65 | 17 (theory) / 16 (measured) | 24 / 4 | 256 | none |
+| Qwen3.8-27B (Q4_K_M) | dense, **hybrid** (attention + recurrent) | 27B | 64 (+1 unused MTP block) | 16 | 24 / 4 | 256 | none |
 | Qwen3.6-35B-A3B (Q4_K_M) | **MoE**, hybrid | 35B total, ~3B active | 40 | 10 | 16 / 2 | 256 | none |
 | Gemma3-12B (Q4_K_M) | dense, sliding window 5:1 | 12B | 48 | 48 (8 global, 40 windowed) | 16 / 8 | 256 | 1024 |
 | gpt-oss-20b (MXFP4) | MoE, sliding window 1:1 | 20.9B total | 24 | 24 (12 global, 12 windowed) | 64 / 8 | 64 | 128 |
@@ -81,14 +82,14 @@ One fresh server per point; contexts 4K to 128K; 3 repetitions at each point (1 
 |---|---|---|---|---|---|---|---|---|
 | Qwen3-8B | 36 | 147456 | 147456 (intercept -0 B) | yes | [0] | [0.0] | 0.0 | 24/24 |
 | Qwen3.6-35B-A3B | 10 | 20480 | 20480 (intercept 0 B) | yes | [0] | [0.0] | 62.8 | 31/32 |
-| Qwen3.8-27B | 16 | 69632 | 65536 (intercept 0 B) | NO (-5.9%) | [0] | [0.0] | 149.6 | 31/32 |
+| Qwen3.8-27B | 16 | 65536 | 65536 (intercept 0 B) | yes | [0] | [0.0] | 149.6 | 31/32 |
 | Gemma3-12B | 8 | 65536 | 65536 (intercept 0 B) | yes | [1536] | [480.0] | 0.0 | 31/35 |
 | gpt-oss-20b | 12 | 24576 | 24576 (intercept -0 B) | yes | [768] | [18.0] | 0.0 | 31/35 |
 
 **Findings**
 
-1. **The formula is exact** for Qwen3-8B, Qwen3.6-35B-A3B, Gemma3-12B (global layers) and gpt-oss-20b (global layers): the fitted slope equals theory to the byte, with a zero intercept.
-2. **Qwen3.8-27B is 5.9% *smaller* than theory** (65,536 vs 69,632 B/token). `llama.cpp` allocated KV for 16 layers; the metadata and tensor scan suggest 17. **I don't know why** (cause unidentified; I did not investigate further).
+1. **The formula is exact** for Qwen3-8B, Qwen3.6-35B-A3B, Qwen3.8-27B, Gemma3-12B (global layers) and gpt-oss-20b (global layers): the fitted slope equals theory to the byte, with a zero intercept.
+2. **Qwen3.8-27B matched theory once corrected.** My first theory script counted 17 layers with an `attn_k` tensor (69,632 B/token, 5.9% above the 65,536 measured). The 17th is block 64, a *next-token-prediction* (MTP) block that ships in the GGUF (`qwen35.nextn_predict_layers = 1`) but that `llama.cpp` ignores: its log says `n_layer = 64, n_layer_all = 65` and `model has unused tensor blk.64.nextn...`. Sixty-four layers with a full-attention layer every 4th (`full_attention_interval = 4`) gives 16, which is what was measured. The script now excludes trailing next-token-prediction layers (`scripts/kv_theory.py`), and all five tested models match theory exactly. The original discrepancy and its cause are kept here because a tensor scan alone will mislead for any model that ships an MTP head.
 3. **The cache is allocated at load, for the whole `-c`**, sized by the context you ask for, not by tokens used. The same `-c` with a 4K prompt and with a 128K prompt has the same KV buffer. So the memory is reserved up front rather than appearing as the conversation grows.
 4. **Windowed caches are fixed-size**: window + 512-token micro-batch, rounded up to 256 cells. Gemma3 1536 cells (**480 MiB**), gpt-oss 768 cells (**18 MiB**), at every context.
 5. **Recurrent state is fixed per sequence**: **62.8 MiB** (35B) and **149.6 MiB** (27B). Small, but it multiplies with concurrent users (§7).
@@ -384,10 +385,88 @@ KV bytes per cell stayed identical to Experiment A at every one of the 44 points
 
 - **Memory is almost exactly "weights + N × (context cache + recurrent state)".** KV cells do the arithmetic you expect; the peak `MemAvailable` drop is that plus transient buffers.
 - **No point failed from memory**, even 27B × 8 × 64K (32 GiB of KV, 54 GiB peak, 59 GiB of free memory remained at the minimum).
-- **Latency is the limit.** The same point took **1763 s** end to end; mean time-to-first-token was **810 s**, worst **1747 s**. INFERRED: prefill is compute-bound and the prompts are processed together, so the last user waits for everyone's prompt.
+- **Latency is the limit.** The same point took **1763 s** end to end. The wait is very uneven: the fastest of the 8 users got a first token after **103 s**, the median after **725 s**, the last after **1747 s** (mean 810 s). With 8 requests a p95 is just the maximum, so min / median / max are reported instead (table below).
+- **Aggregate throughput (DERIVED).** Aggregate prefill speed *falls* as users are added at long context (27B at 64K: 712 tok/s for one user, 300 for eight), so extra users cost more than just queueing. At short context the opposite holds: 27B at 4K reaches 590 tok/s total at 8 users vs 345 alone. Cause not investigated.
 - **Per-request decode speed falls with N** (35B at 4K: 62.8 tok/s alone, 12.1 at N=8) but this was measured while other requests were still prefilling. **It is not an aggregate throughput figure; I did not measure aggregate throughput.**
 
-**Capacity guide (DERIVED).** With ~121 GiB total and weights of ~15 GiB (27B) or ~21 GiB (35B), the memory-only ceiling is far above what latency allows. Plan by the time-to-first-token you can tolerate, then check memory.
+Per-request spread and aggregate throughput (DERIVED from the same 44 runs; aggregate prefill = users × prompt ÷ time until the last first token, total = users × (prompt+generated) ÷ wall time):
+
+### Qwen3-8B (BF16)
+
+| seqs | prompt/seq | TTFT min / median / max s | aggregate prefill tok/s | aggregate (prompt+gen) tok/s over wall | ok |
+|---|---|---|---|---|---|
+| 1 | 4096 | 1.4 / 1.4 / 1.4 | 2996 | 541 | 1/1 |
+| 2 | 4096 | 1.4 / 2.1 / 2.9 | 2846 | 872 | 2/2 |
+| 4 | 4096 | 2.1 / 4.4 / 6.3 | 2593 | 1248 | 4/4 |
+| 8 | 4096 | 2.0 / 9.3 / 15.3 | 2144 | 1440 | 8/8 |
+| 1 | 16384 | 6.2 / 6.2 / 6.2 | 2646 | 1262 | 1/1 |
+| 2 | 16384 | 6.2 / 10.8 / 15.3 | 2142 | 1436 | 2/2 |
+| 4 | 16384 | 7.1 / 23.1 / 41.3 | 1588 | 1309 | 4/4 |
+| 8 | 16384 | 7.3 / 54.7 / 127.7 | 1026 | 945 | 8/8 |
+| 1 | 32768 | 15.1 / 15.1 / 15.1 | 2171 | 1453 | 1/1 |
+| 2 | 32768 | 15.3 / 28.5 / 41.8 | 1568 | 1295 | 2/2 |
+| 4 | 32768 | 16.3 / 63.5 / 127.1 | 1031 | 948 | 4/4 |
+| 8 | 32768 | 16.5 / 163.9 / 436.6 | 600 | 580 | 8/8 |
+
+### Qwen3.6-35B-A3B
+
+| seqs | prompt/seq | TTFT min / median / max s | aggregate prefill tok/s | aggregate (prompt+gen) tok/s over wall | ok |
+|---|---|---|---|---|---|
+| 1 | 4096 | 1.8 / 1.8 / 1.8 | 2334 | 874 | 1/1 |
+| 2 | 4096 | 3.0 / 3.1 / 3.3 | 2503 | 1267 | 2/2 |
+| 4 | 4096 | 3.9 / 6.0 / 6.7 | 2452 | 1570 | 4/4 |
+| 8 | 4096 | 3.9 / 10.1 / 14.2 | 2308 | 1757 | 8/8 |
+| 1 | 16384 | 6.2 / 6.2 / 6.2 | 2647 | 1772 | 1/1 |
+| 2 | 16384 | 7.8 / 10.4 / 13.1 | 2508 | 1987 | 2/2 |
+| 4 | 16384 | 8.7 / 19.3 / 29.2 | 2243 | 1981 | 4/4 |
+| 8 | 16384 | 8.7 / 37.2 / 70.1 | 1871 | 1757 | 8/8 |
+| 1 | 32768 | 12.7 / 12.7 / 12.7 | 2571 | 2059 | 1/1 |
+| 2 | 32768 | 14.6 / 21.5 / 28.4 | 2305 | 2049 | 2/2 |
+| 4 | 32768 | 15.5 / 40.7 / 68.3 | 1920 | 1812 | 4/4 |
+| 8 | 32768 | 15.4 / 84.4 / 182.3 | 1438 | 1402 | 8/8 |
+| 1 | 65536 | 27.9 / 27.9 / 27.9 | 2351 | 2099 | 1/1 |
+| 2 | 65536 | 30.2 / 48.6 / 67.0 | 1956 | 1849 | 2/2 |
+| 4 | 65536 | 31.0 / 95.8 / 179.4 | 1461 | 1425 | 4/4 |
+| 8 | 65536 | 31.1 / 220.9 / 535.4 | 979 | 969 | 8/8 |
+
+### Qwen3.8-27B
+
+| seqs | prompt/seq | TTFT min / median / max s | aggregate prefill tok/s | aggregate (prompt+gen) tok/s over wall | ok |
+|---|---|---|---|---|---|
+| 1 | 4096 | 4.9 / 4.9 / 4.9 | 832 | 345 | 1/1 |
+| 2 | 4096 | 9.3 / 9.8 / 10.3 | 798 | 467 | 2/2 |
+| 4 | 4096 | 12.4 / 19.3 / 21.4 | 764 | 561 | 4/4 |
+| 8 | 4096 | 12.4 / 33.0 / 46.5 | 704 | 590 | 8/8 |
+| 1 | 16384 | 20.1 / 20.1 / 20.1 | 816 | 600 | 1/1 |
+| 2 | 16384 | 25.5 / 34.3 / 43.1 | 759 | 644 | 2/2 |
+| 4 | 16384 | 28.1 / 63.5 / 96.2 | 681 | 626 | 4/4 |
+| 8 | 16384 | 28.2 / 122.6 / 230.6 | 568 | 545 | 8/8 |
+| 1 | 32768 | 42.1 / 42.1 / 42.1 | 779 | 661 | 1/1 |
+| 2 | 32768 | 48.0 / 71.1 / 94.2 | 696 | 640 | 2/2 |
+| 4 | 32768 | 51.0 / 132.6 / 226.3 | 579 | 556 | 4/4 |
+| 8 | 32768 | 51.1 / 282.0 / 596.5 | 439 | 432 | 8/8 |
+| 1 | 65536 | 92.0 / 92.0 / 92.0 | 712 | 654 | 1/1 |
+| 2 | 65536 | 99.6 / 161.5 / 223.5 | 586 | 563 | 2/2 |
+| 4 | 65536 | 103.5 / 325.5 / 603.4 | 434 | 426 | 4/4 |
+| 8 | 65536 | 102.8 / 725.4 / 1747.2 | 300 | 298 | 8/8 |
+
+**Operating points (DERIVED, n=1).** Largest number of simultaneous equal-length prompts (from the 1/2/4/8 tested) whose *worst* time-to-first-token stays within a budget. Read it as "at most this many arriving at once":
+
+| model | prompt/seq | max seqs with worst TTFT ≤ 10 s | max seqs with worst TTFT ≤ 30 s | max seqs with worst TTFT ≤ 120 s |
+|---|---|---|---|---|
+| Qwen3-8B (BF16) | 4K | 4 | 8 | 8 |
+| Qwen3-8B (BF16) | 16K | 1 | 2 | 4 |
+| Qwen3-8B (BF16) | 32K | 0 (one alone is slower) | 1 | 2 |
+| Qwen3.6-35B-A3B | 4K | 4 | 8 | 8 |
+| Qwen3.6-35B-A3B | 16K | 1 | 4 | 8 |
+| Qwen3.6-35B-A3B | 32K | 0 (one alone is slower) | 2 | 4 |
+| Qwen3.6-35B-A3B | 64K | 0 (one alone is slower) | 1 | 2 |
+| Qwen3.8-27B | 4K | 1 | 4 | 8 |
+| Qwen3.8-27B | 16K | 0 (one alone is slower) | 1 | 4 |
+| Qwen3.8-27B | 32K | 0 (one alone is slower) | 0 (one alone is slower) | 2 |
+| Qwen3.8-27B | 64K | 0 (one alone is slower) | 0 (one alone is slower) | 1 |
+
+With ~121 GiB total and weights of ~15 GiB (27B) or ~21 GiB (35B), the memory-only ceiling is far above what latency allows, so plan by the wait you can tolerate, then check memory. **Repeats were not run:** each point is a single run, so the numbers show the shape (and that this is not a memory limit), not a precise capacity. The next step would be 3 repeats of a few points, ideally with another prefill/batch-size setting to separate a capacity limit from a scheduler effect.
 
 ### 7.2 "Context size has been exceeded" (HTTP 500)
 
@@ -408,7 +487,17 @@ The server log shows `failed to find free space in the KV cache`, after which **
 2. **Prefer models with cheap caches for long context**: hybrid and windowed designs (the 35B-A3B at 20 KiB/token) fit 128K for 2.5 GiB where a classic GQA 8B (144 KiB) needs 18 GiB.
 3. **Set `-c` for the aggregate**, because it is reserved at startup (and a large `-c` costs memory even when idle).
 4. **`q8_0` KV is a safe-looking default for saving half the cache**; `q4_0` saves 72% with a small measured perplexity cost. Verify on your own task.
-5. **Plan for latency, not memory, when sharing a box.** Prefill is serialised; long prompts hurt everyone's time-to-first-token (§7.1; earlier measurements in [`../llm-resource-requirements/`](../llm-resource-requirements/README.md)).
+5. **Plan for latency, not memory, when sharing a box.** Long prompts hurt everyone's time-to-first-token (§7.1; earlier measurements in [`../llm-resource-requirements/`](../llm-resource-requirements/README.md)).
+
+### Quick picks for a GB10 (DERIVED from §4-§7; adjust to your latency budget)
+
+| Goal | Pick |
+|---|---|
+| Chat, several users, ≤ 16K each | 35B-A3B (4K × 8 users: worst wait 14 s; 16K × 4: 29 s). 27B only if quality needs it: 4K × 4 users already waits 21 s. |
+| One user, 128K context | 35B-A3B (2.5 GiB cache, 36 tok/s at 128K, 70 s to first token) or gpt-oss-20b; the 27B takes 221 s to first token. |
+| Several users at 32K+ | Expect waits of minutes; limit arrivals or queue them (35B at 32K: worst wait 28 s for 2 users, 68 s for 4). Memory will not be the problem. |
+| Memory tight | `q8_0` KV (half the cache, no measured quality cost on perplexity or needle) before `q4_0`. |
+| Set `-c` | to the sum of tokens of all requests you allow in flight (§7.2), not the longest single request. |
 
 ## 9. What was and was not done
 
@@ -421,7 +510,6 @@ The server log shows `failed to find free space in the KV cache`, after which **
 - Needle at 128K not run; 27B at 32K scores lower than at 8K (model behaviour, shown at f16 too).
 - Concurrency: n=1 per point; no quantised KV or other pool sizes; no aggregate throughput claim; the 500-error trials were not repeated and the mechanism is inferred.
 - Prompt speed varied ~12% between sessions in the earlier study; not re-checked here (experiments were run in separate sessions, so cross-experiment comparisons carry that uncertainty).
-- The 27B's 17th attention tensor is unexplained (§4).
 - A first needle run was invalid (a 12-token answer cap cut off answers; the f16 baseline scored 6/20); it is kept in `raw/superseded/` and was rerun with 64 tokens.
 
 ## 10. Reproduce

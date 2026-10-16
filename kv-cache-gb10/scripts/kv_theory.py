@@ -17,6 +17,8 @@ for name,p in MODELS.items():
     r=GGUFReader(p); a=scal(r,"general.architecture") if False else bytes(r.fields["general.architecture"].parts[-1]).decode()
     L=int(scal(r,f"{a}.block_count"))
     kvl={int(m.group(1)) for t in r.tensors if (m:=re.match(r"blk\.(\d+)\.attn_k\.weight",t.name))}
+    nx=scal(r,f"{a}.nextn_predict_layers") or 0   # trailing MTP block(s): tensors exist, llama.cpp ignores them (n_layer = block_count - nextn)
+    kvl={i for i in kvl if i<L-int(nx)}
     hk=r.fields[f"{a}.attention.head_count_kv"]; hkv=[int(hk.parts[i][0]) for i in hk.data]
     hkv=hkv*L if len(hkv)==1 else hkv
     kl=int(scal(r,f"{a}.attention.key_length")); vl=int(scal(r,f"{a}.attention.value_length"))
