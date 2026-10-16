@@ -17,7 +17,7 @@ The weights of a model are a fixed price. The **KV cache** is the variable price
 | Does long context slow generation? | Decode speed falls to **58–70%** (Qwen hybrids) and **51%** (Gemma3, gpt-oss) of its 4K value at 128K. Prompt processing also slows. |
 | Does quantising the cache help? | `q8_0` saves **46.9%** and `q4_0` **71.9%** of cache memory (MEASURED). Perplexity change: **≤ +0.14%** (q8_0) and **≤ +0.64%** (q4_0); needle-in-haystack accuracy unchanged. But exact output text diverges (§6). |
 | How many users fit? | Memory is rarely the limit; **latency is.** 8 users × 64K on the 27B fit in 54 GiB peak but the mean time-to-first-token was **810 s** (§7). |
-| Is more concurrency worth it? | At short context, yes: 27B at 4K goes from 345 to 590 tok/s aggregate (1 → 8 users). At long context, no: 27B at 64K falls from 654 to **298** tok/s and the worst wait reaches 29 min (§7.1, DERIVED from one run per point). |
+| Is more concurrency worth it? | At short context, yes: 27B at 4K goes from 345 to 590 tok/s aggregate (1 → 8 users). At long context, no: 27B at 64K falls from 654 to **298** tok/s and the worst wait reaches 29 min (§7.1, DERIVED; the main points were repeated three times, §7.3). |
 | Why did I get "context size exceeded"? | Reproduced when in-flight requests need more cells than the unified pool holds (§7.2). |
 
 ![KV allocated vs prompt tokens](images/phase1_memory_vs_context.png)
@@ -308,7 +308,7 @@ Full performance table:
 
 ## 7. Many users at once (Experiment, concurrency × context)
 
-`-np N --kv-unified`: N slots share one pool of `N × (prompt + 64 + 8)` cells (unified KV, the production default). N simultaneous *distinct* prompts, each prompt tokens long, 64 generated. **One run per point (n=1):** treat latencies as indicative.
+`-np N --kv-unified`: N slots share one pool of `N × (prompt + 64 + 8)` cells (unified KV, the production default). N simultaneous *distinct* prompts, each prompt tokens long, 64 generated. The 44-point matrix is **one run per point**; ten of the points that matter most were repeated twice more (n=3, §7.3).
 
 ### 7.1 The matrix (MEASURED)
 
@@ -450,7 +450,7 @@ Per-request spread and aggregate throughput (DERIVED from the same 44 runs; aggr
 | 4 | 65536 | 103.5 / 325.5 / 603.4 | 434 | 426 | 4/4 |
 | 8 | 65536 | 102.8 / 725.4 / 1747.2 | 300 | 298 | 8/8 |
 
-**Operating points (DERIVED, n=1).** Largest number of simultaneous equal-length prompts (from the 1/2/4/8 tested) whose *worst* time-to-first-token stays within a budget. Read it as "at most this many arriving at once":
+**Operating points (DERIVED from the matrix; the points near the limits were repeated, §7.3).** Largest number of simultaneous equal-length prompts (from the 1/2/4/8 tested) whose *worst* time-to-first-token stays within a budget. Read it as "at most this many arriving at once":
 
 | model | prompt/seq | max seqs with worst TTFT ≤ 10 s | max seqs with worst TTFT ≤ 30 s | max seqs with worst TTFT ≤ 120 s |
 |---|---|---|---|---|
@@ -466,7 +466,7 @@ Per-request spread and aggregate throughput (DERIVED from the same 44 runs; aggr
 | Qwen3.8-27B | 32K | 0 (one alone is slower) | 0 (one alone is slower) | 2 |
 | Qwen3.8-27B | 64K | 0 (one alone is slower) | 0 (one alone is slower) | 1 |
 
-With ~121 GiB total and weights of ~15 GiB (27B) or ~21 GiB (35B), the memory-only ceiling is far above what latency allows, so plan by the wait you can tolerate, then check memory. **Repeats were not run:** each point is a single run, so the numbers show the shape (and that this is not a memory limit), not a precise capacity. The next step would be 3 repeats of a few points, ideally with another prefill/batch-size setting to separate a capacity limit from a scheduler effect.
+With ~121 GiB total and weights of ~15 GiB (27B) or ~21 GiB (35B), the memory-only ceiling is far above what latency allows, so plan by the wait you can tolerate, then check memory. The repeats in §7.3 show these numbers are stable on this machine, but they are all with one prompt set and one build.
 
 ### 7.2 "Context size has been exceeded" (HTTP 500)
 
@@ -480,6 +480,36 @@ This 500 had been seen in production flags (35B, `-c 131072`, 4 slots, unified, 
 | D | 4 × 40K at once (160K > pool) | all four 500 |
 
 The server log shows `failed to find free space in the KV cache`, after which **every request in flight failed, even one at 129,996 tokens**. **INFERRED, not demonstrated:** the server admits more concurrent tokens than the unified pool can hold, then fails all of them. Filling the pool alone is harmless. **Practical rule (INFERRED from these trials):** keep the sum of tokens of all requests in flight ≤ `-c`, and set `-c` for the maximum *aggregate*, not the maximum single request.
+
+### 7.3 Are the numbers reproducible? Does the batch size matter?
+
+Ten points were rerun twice more (n=3 including the original) at default flags (`-b 2048 -ub 512`). **Criterion fixed before running:** a point is reproducible if every repeat's worst TTFT is within ±10% of the mean. **All ten met it, and the largest spread was under 5%** (35B 8×64K: 513-535 s; 27B 8×64K: 1738-1759 s, i.e. the 29-minute worst wait is not a one-off).
+
+| model | seqs × prompt | reps | max TTFT s: mean (min-max) | median TTFT s | min TTFT s | aggregate prefill tok/s | wall s | max-TTFT within ±10% of mean |
+|---|---|---|---|---|---|---|---|---|
+| Qwen3.6-35B-A3B | 8 × 4K | 3 | 14.2 (14.1-14.2) | 10.0 (10.0-10.1) | 3.9 (3.9-3.9) | 2315 (2308-2322) | 19 (19-19) | yes |
+| Qwen3.6-35B-A3B | 4 × 16K | 3 | 29.1 (29.0-29.2) | 19.2 (19.2-19.3) | 8.6 (8.6-8.7) | 2252 (2243-2259) | 33 (33-33) | yes |
+| Qwen3.6-35B-A3B | 4 × 32K | 3 | 68.1 (68.0-68.3) | 40.6 (40.6-40.7) | 15.4 (15.4-15.5) | 1925 (1920-1929) | 72 (72-72) | yes |
+| Qwen3.6-35B-A3B | 4 × 64K | 3 | 176.7 (175.1-179.4) | 95.5 (95.2-95.8) | 31.0 (31.0-31.1) | 1484 (1461-1497) | 181 (180-184) | yes |
+| Qwen3.6-35B-A3B | 8 × 64K | 3 | 521.3 (512.8-535.4) | 217.2 (215.4-220.9) | 31.0 (31.0-31.1) | 1006 (979-1022) | 527 (519-542) | yes |
+| Qwen3.8-27B | 8 × 4K | 3 | 46.2 (46.1-46.5) | 32.9 (32.9-33.0) | 12.4 (12.4-12.4) | 709 (704-711) | 56 (56-56) | yes |
+| Qwen3.8-27B | 4 × 16K | 3 | 96.4 (96.2-96.7) | 63.7 (63.5-63.9) | 28.2 (28.1-28.3) | 680 (678-681) | 105 (105-106) | yes |
+| Qwen3.8-27B | 4 × 32K | 3 | 226.2 (225.4-227.0) | 134.1 (132.6-134.9) | 51.0 (51.0-51.0) | 579 (577-582) | 236 (235-237) | yes |
+| Qwen3.8-27B | 2 × 64K | 3 | 222.5 (220.7-223.5) | 161.0 (160.0-161.5) | 99.4 (99.4-99.6) | 589 (586-594) | 232 (230-233) | yes |
+| Qwen3.8-27B | 8 × 64K | 3 | 1748.0 (1738.0-1759.0) | 734.5 (725.4-743.6) | 105.3 (102.8-106.6) | 300 (298-302) | 1764 (1754-1775) | yes |
+
+Then three of those points were rerun three times with a larger physical batch (`-b 2048 -ub 2048`) to test whether the long-context collapse is an artefact of the prefill chunk size:
+
+| model | seqs × prompt | setting | reps | max TTFT s: mean (min-max) | median TTFT s | aggregate prefill tok/s | wall s |
+|---|---|---|---|---|---|---|---|
+| Qwen3.6-35B-A3B | 4 × 64K | default (-b 2048 -ub 512) | 3 | 176.7 (175.1-179.4) | 95.5 (95.2-95.8) | 1484 (1461-1497) | 181 (180-184) |
+| Qwen3.6-35B-A3B | 4 × 64K | -b 2048 -ub 2048 | 3 | 160.0 (158.5-162.7) | 85.5 (85.2-85.9) | 1639 (1611-1654) | 165 (163-167) |
+| Qwen3.8-27B | 8 × 4K | default (-b 2048 -ub 512) | 3 | 46.2 (46.1-46.5) | 32.9 (32.9-33.0) | 709 (704-711) | 56 (56-56) |
+| Qwen3.8-27B | 8 × 4K | -b 2048 -ub 2048 | 3 | 44.8 (44.7-44.9) | 32.0 (31.9-32.1) | 731 (729-733) | 55 (55-55) |
+| Qwen3.8-27B | 4 × 32K | default (-b 2048 -ub 512) | 3 | 226.2 (225.4-227.0) | 134.1 (132.6-134.9) | 579 (577-582) | 236 (235-237) |
+| Qwen3.8-27B | 4 × 32K | -b 2048 -ub 2048 | 3 | 212.9 (212.3-213.4) | 127.9 (127.5-128.4) | 616 (614-617) | 223 (222-223) |
+
+The larger micro-batch helps modestly and consistently: aggregate prefill is **+3% to +10%** higher (35B 4×64K: 1484 → 1639 tok/s; 27B 4×32K: 579 → 616) and the worst wait **3-10%** shorter. It does **not** remove the effect: 27B 4×32K still runs at 616 tok/s aggregate against 779 for one user alone. So in this configuration the collapse is not explained by the micro-batch size. Other scheduler or kernel settings were not tested, and the cause is not established. Tuning `-ub` is a cheap win to try, but it does not change the planning rule that long prompts at high concurrency are a latency problem.
 
 ## 8. Practical guidance
 
@@ -508,7 +538,7 @@ The server log shows `failed to find free space in the KV cache`, after which **
 - Mixed K/V types (e.g. `q8_0` K with `q4_0` V) not tested.
 - Perplexity: one pass, one corpus (wikitext-2), no paired statistics; no task-quality suite.
 - Needle at 128K not run; 27B at 32K scores lower than at 8K (model behaviour, shown at f16 too).
-- Concurrency: n=1 per point; no quantised KV or other pool sizes; no aggregate throughput claim; the 500-error trials were not repeated and the mechanism is inferred.
+- Concurrency: the 44-point matrix is n=1 per point (ten points repeated to n=3, §7.3, with the same prompts each time, so that is a test-retest of the system, not of prompt variety); one alternative batch setting only; no quantised KV or other pool sizes; the 500-error trials were not repeated and the mechanism is inferred.
 - Prompt speed varied ~12% between sessions in the earlier study; not re-checked here (experiments were run in separate sessions, so cross-experiment comparisons carry that uncertainty).
 - A first needle run was invalid (a 12-token answer cap cut off answers; the f16 baseline scored 6/20); it is kept in `raw/superseded/` and was rerun with 64 tokens.
 
@@ -522,6 +552,8 @@ bash scripts/run_phase1.sh   && python -I scripts/analyze_phase1.py   # §4
 bash scripts/run_phase2.sh   && bash scripts/run_bench_depth.sh && python -I scripts/analyze_phase2.py   # §5
 bash scripts/run_phase3_perf.sh && bash scripts/run_phase3_quality.sh && python -I scripts/analyze_phase3.py  # §6
 bash scripts/run_phase4.sh   && python -I scripts/repro_500.py && python -I scripts/analyze_phase4.py       # §7
+python -I scripts/analyze_phase4_extra.py .                                               # §7.1 latency/operating tables
+bash scripts/run_phase4_repeats.sh && python -I scripts/analyze_phase4_repeats.py .                      # §7.3
 python -I scripts/build_readme.py .                                    # regenerate this file
 ```
 

@@ -88,3 +88,8 @@ Plan: `PLAN.md`. Status: Phase 0 done. Phases 1 and 2 data collected and analyse
 - 27B 16-vs-17 resolved: 17th `attn_k` is the unused MTP block 64 (`nextn_predict_layers=1`, log "n_layer=64, n_layer_all=65", "unused tensor blk.64.nextn"). `kv_theory.py` now excludes trailing nextn layers; theory.json/phase1 table regenerated, all 5 models match.
 - Added `scripts/analyze_phase4_extra.py` -> `tables/phase4_latency.md` (TTFT min/median/max, aggregate prefill and total tok/s) and `phase4_operating_points.md`; README §7.1/§8 updated (quick picks, aggregate throughput falls with N at long context).
 - NOT done (needs GPU, ask first): repeats of concurrency points (n=1), a different prefill/batch setting to separate capacity from scheduler effects.
+
+## Concurrency repeats (approved plan), done 2026-10-16 evening — local, NOT yet pushed
+- `scripts/run_phase4_repeats.sh` (interleaved by rep): Part A = 10 points x reps 2-3 at default flags -> `raw/p4r_*_rN.json` (rep 1 = original p4_ file); Part B = 3 points x 3 reps with `-b 2048 -ub 2048` -> `raw/p4b_*_rN.json`. 29 runs, all requests OK. harness_conc.py got `--prefix` and `--extra`.
+- Result: all 10 points reproducible (criterion fixed beforehand: max TTFT within +-10% of mean); largest spread 4.3% (35B 8x64K), 27B 8x64K worst TTFT 1738-1759 s. Batch 2048/2048: aggregate prefill +3% to +10%, worst wait 3-10% shorter, but long-context aggregate collapse remains. Tables `tables/phase4_repeats.md`, `phase4_batch.md`; README §7.3.
+- Prod models reloaded and verified. Next: push to datmt/learning if user wants.

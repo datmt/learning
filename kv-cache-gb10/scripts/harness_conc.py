@@ -8,11 +8,13 @@ ap.add_argument("--model",required=True); ap.add_argument("--n",type=int,require
 ap.add_argument("--gen",type=int,default=64); ap.add_argument("--kv",default="f16"); ap.add_argument("--tag",default="")
 ap.add_argument("--ctx",type=int,default=0,help="override total -c (cells); default n*(prompt+gen+8)")
 ap.add_argument("--np",type=int,default=0,help="override slot count (default n)")
+ap.add_argument("--prefix",default="p4",help="raw/log file prefix (p4 = original matrix, p4r = repeats, p4b = batch variant)")
+ap.add_argument("--extra",default="",help="extra llama-server flags, space separated (e.g. \"-b 2048 -ub 2048\")")
 a=ap.parse_args()
 ctx=a.ctx or a.n*(a.prompt+a.gen+8); npar=a.np or a.n
-rid=f"p4_{a.model.replace('.gguf','')}_n{a.n}_p{a.prompt}_{a.kv}{a.tag}"
+rid=f"{a.prefix}_{a.model.replace('.gguf','')}_n{a.n}_p{a.prompt}_{a.kv}{a.tag}"
 cmd=[BIN,"-m",MODELS+a.model,"-c",str(ctx),"-np",str(npar),"--kv-unified","-ngl","999","-fa","on","--cache-type-k",a.kv,"--cache-type-v",a.kv,
-     "--port",str(PORT),"--host","127.0.0.1","--no-cache-prompt","--cache-ram","0","-lv","4"]
+     "--port",str(PORT),"--host","127.0.0.1","--no-cache-prompt","--cache-ram","0","-lv","4"]+a.extra.split()
 rec=dict(id=rid,args=vars(a),cmd=cmd,n_ctx_total=ctx,errors=[],reqs=[],mem=[],session=time.strftime("%Y%m%dT%H%M%S"))
 def memavail():
     for l in open("/proc/meminfo"):
