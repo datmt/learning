@@ -1,0 +1,840 @@
+{
+ "id": "p3q_needle_Qwen3.6-35B-A3B-UD-Q4_K_M_q4_0_c8192",
+ "args": {
+  "model": "Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+  "kv": "q4_0",
+  "mode": "needle",
+  "ctx": 8192,
+  "trials": 20
+ },
+ "cmd": [
+  "/data/engines/llama.cpp/build/bin/llama-server",
+  "-m",
+  "/data/engines/models/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+  "-c",
+  "8192",
+  "-np",
+  "1",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "--cache-type-k",
+  "q4_0",
+  "--cache-type-v",
+  "q4_0",
+  "--port",
+  "8192",
+  "--host",
+  "127.0.0.1",
+  "--no-cache-prompt",
+  "--cache-ram",
+  "0",
+  "-lv",
+  "4"
+ ],
+ "errors": [],
+ "results": [
+  {
+   "depth": 0.0,
+   "trial": 0,
+   "code": "536857",
+   "answer": "\n\n<think>\n\n</think>\n\n536857",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 1,
+   "code": "461689",
+   "answer": "\n\n<think>\n\n</think>\n\n461689",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 2,
+   "code": "297316",
+   "answer": "\n\n<think>\n\n</think>\n\n297316",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 3,
+   "code": "795015",
+   "answer": "\n\n<think>\n\n</think>\n\n795015",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 4,
+   "code": "746853",
+   "answer": "\n\n<think>\n\n</think>\n\n746853",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 5,
+   "code": "282722",
+   "answer": "\n\n<think>\n\n</think>\n\n282722",
+   "ok": true,
+   "n_prompt": 7832
+  },
+  {
+   "depth": 0.0,
+   "trial": 6,
+   "code": "523942",
+   "answer": "\n\n<think>\n\n</think>\n\n523942",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 7,
+   "code": "459723",
+   "answer": "\n\n<think>\n\n</think>\n\n459723",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 8,
+   "code": "539032",
+   "answer": "\n\n<think>\n\n</think>\n\n539032",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 9,
+   "code": "348408",
+   "answer": "\n\n<think>\n\n</think>\n\n348408",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 10,
+   "code": "182918",
+   "answer": "\n\n<think>\n\n</think>\n\n182918",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 11,
+   "code": "814946",
+   "answer": "\n\n<think>\n\n</think>\n\n814946",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 12,
+   "code": "388222",
+   "answer": "\n\n<think>\n\n</think>\n\n388222",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 13,
+   "code": "597117",
+   "answer": "\n\n<think>\n\n</think>\n\n597117",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 14,
+   "code": "242465",
+   "answer": "\n\n<think>\n\n</think>\n\n242465",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 15,
+   "code": "166138",
+   "answer": "\n\n<think>\n\n</think>\n\n166138",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 16,
+   "code": "389921",
+   "answer": "\n\n<think>\n\n</think>\n\n389921",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 17,
+   "code": "505910",
+   "answer": "\n\n<think>\n\n</think>\n\n505910",
+   "ok": true,
+   "n_prompt": 7832
+  },
+  {
+   "depth": 0.0,
+   "trial": 18,
+   "code": "256737",
+   "answer": "\n\n<think>\n\n</think>\n\n256737",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.0,
+   "trial": 19,
+   "code": "383849",
+   "answer": "\n\n<think>\n\n</think>\n\n383849",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.25,
+   "trial": 0,
+   "code": "663463",
+   "answer": "\n\n<think>\n\n</think>\n\n663463",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.25,
+   "trial": 1,
+   "code": "292748",
+   "answer": "\n\n<think>\n\n</think>\n\n292748",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 2,
+   "code": "257520",
+   "answer": "\n\n<think>\n\n</think>\n\n257520",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 3,
+   "code": "653455",
+   "answer": "\n\n<think>\n\n</think>\n\n653455",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 4,
+   "code": "414024",
+   "answer": "\n\n<think>\n\n</think>\n\n414024",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 5,
+   "code": "507839",
+   "answer": "\n\n<think>\n\n</think>\n\n507839",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.25,
+   "trial": 6,
+   "code": "107052",
+   "answer": "\n\n<think>\n\n</think>\n\n107052",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.25,
+   "trial": 7,
+   "code": "384329",
+   "answer": "\n\n<think>\n\n</think>\n\n384329",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 8,
+   "code": "838445",
+   "answer": "\n\n<think>\n\n</think>\n\n838445",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 9,
+   "code": "430941",
+   "answer": "\n\n<think>\n\n</think>\n\n430941",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 10,
+   "code": "243025",
+   "answer": "\n\n<think>\n\n</think>\n\n243025",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.25,
+   "trial": 11,
+   "code": "481291",
+   "answer": "\n\n<think>\n\n</think>\n\n481291",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 12,
+   "code": "152170",
+   "answer": "\n\n<think>\n\n</think>\n\n152170",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 13,
+   "code": "545101",
+   "answer": "\n\n<think>\n\n</think>\n\n545101",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 14,
+   "code": "871316",
+   "answer": "\n\n<think>\n\n</think>\n\n871316",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.25,
+   "trial": 15,
+   "code": "276365",
+   "answer": "\n\n<think>\n\n</think>\n\n276365",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 16,
+   "code": "436527",
+   "answer": "\n\n<think>\n\n</think>\n\n436527",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 17,
+   "code": "746369",
+   "answer": "\n\n<think>\n\n</think>\n\n746369",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 18,
+   "code": "123444",
+   "answer": "\n\n<think>\n\n</think>\n\n123444",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.25,
+   "trial": 19,
+   "code": "745335",
+   "answer": "\n\n<think>\n\n</think>\n\n745335",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 0,
+   "code": "863717",
+   "answer": "\n\n<think>\n\n</think>\n\n863717",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 1,
+   "code": "599431",
+   "answer": "\n\n<think>\n\n</think>\n\n599431",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 2,
+   "code": "671384",
+   "answer": "\n\n<think>\n\n</think>\n\n671384",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 3,
+   "code": "549227",
+   "answer": "\n\n<think>\n\n</think>\n\n549227",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 4,
+   "code": "685089",
+   "answer": "\n\n<think>\n\n</think>\n\n685089",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 5,
+   "code": "698283",
+   "answer": "\n\n<think>\n\n</think>\n\n698283",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 6,
+   "code": "567336",
+   "answer": "\n\n<think>\n\n</think>\n\n567336",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 7,
+   "code": "204829",
+   "answer": "\n\n<think>\n\n</think>\n\n204829",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 8,
+   "code": "144939",
+   "answer": "\n\n<think>\n\n</think>\n\n144939",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 9,
+   "code": "278383",
+   "answer": "\n\n<think>\n\n</think>\n\n278383",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.5,
+   "trial": 10,
+   "code": "481359",
+   "answer": "\n\n<think>\n\n</think>\n\n481359",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 11,
+   "code": "429672",
+   "answer": "\n\n<think>\n\n</think>\n\n429672",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 12,
+   "code": "317529",
+   "answer": "\n\n<think>\n\n</think>\n\n317529",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 13,
+   "code": "965844",
+   "answer": "\n\n<think>\n\n</think>\n\n965844",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 14,
+   "code": "194400",
+   "answer": "\n\n<think>\n\n</think>\n\n194400",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 15,
+   "code": "321972",
+   "answer": "\n\n<think>\n\n</think>\n\n321972",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 16,
+   "code": "539074",
+   "answer": "\n\n<think>\n\n</think>\n\n539074",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 17,
+   "code": "866372",
+   "answer": "\n\n<think>\n\n</think>\n\n866372",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 18,
+   "code": "525513",
+   "answer": "\n\n<think>\n\n</think>\n\n525513",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.5,
+   "trial": 19,
+   "code": "550888",
+   "answer": "\n\n<think>\n\n</think>\n\n550888",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 0,
+   "code": "118148",
+   "answer": "\n\n<think>\n\n</think>\n\n118148",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.75,
+   "trial": 1,
+   "code": "842028",
+   "answer": "\n\n<think>\n\n</think>\n\n842028",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 2,
+   "code": "583437",
+   "answer": "\n\n<think>\n\n</think>\n\n583437",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 3,
+   "code": "381737",
+   "answer": "\n\n<think>\n\n</think>\n\n381737",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.75,
+   "trial": 4,
+   "code": "969660",
+   "answer": "\n\n<think>\n\n</think>\n\n969660",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.75,
+   "trial": 5,
+   "code": "871528",
+   "answer": "\n\n<think>\n\n</think>\n\n871528",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 6,
+   "code": "342727",
+   "answer": "\n\n<think>\n\n</think>\n\n342727",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.75,
+   "trial": 7,
+   "code": "704103",
+   "answer": "\n\n<think>\n\n</think>\n\n704103",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 8,
+   "code": "886354",
+   "answer": "\n\n<think>\n\n</think>\n\n886354",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 9,
+   "code": "134477",
+   "answer": "\n\n<think>\n\n</think>\n\n134477",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 10,
+   "code": "438207",
+   "answer": "\n\n<think>\n\n</think>\n\n438207",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 11,
+   "code": "565890",
+   "answer": "\n\n<think>\n\n</think>\n\n565890",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 12,
+   "code": "789272",
+   "answer": "\n\n<think>\n\n</think>\n\n789272",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 13,
+   "code": "714867",
+   "answer": "\n\n<think>\n\n</think>\n\n714867",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.75,
+   "trial": 14,
+   "code": "754021",
+   "answer": "\n\n<think>\n\n</think>\n\n754021",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 15,
+   "code": "186431",
+   "answer": "\n\n<think>\n\n</think>\n\n186431",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 16,
+   "code": "943471",
+   "answer": "\n\n<think>\n\n</think>\n\n943471",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 0.75,
+   "trial": 17,
+   "code": "236970",
+   "answer": "\n\n<think>\n\n</think>\n\n236970",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 18,
+   "code": "181446",
+   "answer": "\n\n<think>\n\n</think>\n\n181446",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 0.75,
+   "trial": 19,
+   "code": "468079",
+   "answer": "\n\n<think>\n\n</think>\n\n468079",
+   "ok": true,
+   "n_prompt": 7834
+  },
+  {
+   "depth": 1.0,
+   "trial": 0,
+   "code": "732707",
+   "answer": "\n\n<think>\n\n</think>\n\n732707",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 1,
+   "code": "244602",
+   "answer": "\n\n<think>\n\n</think>\n\n244602",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 2,
+   "code": "556678",
+   "answer": "\n\n<think>\n\n</think>\n\n556678",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 3,
+   "code": "985506",
+   "answer": "\n\n<think>\n\n</think>\n\n985506",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 4,
+   "code": "569404",
+   "answer": "\n\n<think>\n\n</think>\n\n569404",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 5,
+   "code": "103098",
+   "answer": "\n\n<think>\n\n</think>\n\n103098",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 6,
+   "code": "340402",
+   "answer": "\n\n<think>\n\n</think>\n\n340402",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 7,
+   "code": "315403",
+   "answer": "\n\n<think>\n\n</think>\n\n315403",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 8,
+   "code": "120324",
+   "answer": "\n\n<think>\n\n</think>\n\n120324",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 9,
+   "code": "177452",
+   "answer": "\n\n<think>\n\n</think>\n\n177452",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 10,
+   "code": "360534",
+   "answer": "\n\n<think>\n\n</think>\n\n360534",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 11,
+   "code": "257564",
+   "answer": "\n\n<think>\n\n</think>\n\n257564",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 12,
+   "code": "849462",
+   "answer": "\n\n<think>\n\n</think>\n\n849462",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 13,
+   "code": "753264",
+   "answer": "\n\n<think>\n\n</think>\n\n753264",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 14,
+   "code": "867466",
+   "answer": "\n\n<think>\n\n</think>\n\n867466",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 15,
+   "code": "362062",
+   "answer": "\n\n<think>\n\n</think>\n\n362062",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 16,
+   "code": "961021",
+   "answer": "\n\n<think>\n\n</think>\n\n961021",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 17,
+   "code": "576454",
+   "answer": "\n\n<think>\n\n</think>\n\n576454",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 18,
+   "code": "338015",
+   "answer": "\n\n<think>\n\n</think>\n\n338015",
+   "ok": true,
+   "n_prompt": 7833
+  },
+  {
+   "depth": 1.0,
+   "trial": 19,
+   "code": "417552",
+   "answer": "\n\n<think>\n\n</think>\n\n417552",
+   "ok": true,
+   "n_prompt": 7833
+  }
+ ],
+ "session": "20261016T051407"
+}

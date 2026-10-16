@@ -1,0 +1,234 @@
+{
+ "cmd": [
+  "/data/engines/llama.cpp/build/bin/llama-server",
+  "-m",
+  "/data/engines/models/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+  "--ctx-size",
+  "131072",
+  "--parallel",
+  "4",
+  "--kv-unified",
+  "--flash-attn",
+  "on",
+  "--cache-reuse",
+  "256",
+  "-ngl",
+  "99",
+  "--jinja",
+  "--port",
+  "8191",
+  "--host",
+  "127.0.0.1",
+  "-lv",
+  "4"
+ ],
+ "trials": [
+  {
+   "name": "A_big130k_then_4x8k",
+   "big": 130000,
+   "small_n": 4,
+   "small_len": 8000,
+   "small_delay": -1,
+   "results": [
+    {
+     "tag": "big",
+     "status": 200,
+     "body": null,
+     "n_prompt": 130000,
+     "s": 65.5
+    },
+    {
+     "tag": "small2",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.2
+    },
+    {
+     "tag": "small1",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.4
+    },
+    {
+     "tag": "small0",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.5
+    },
+    {
+     "tag": "small3",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.5
+    }
+   ]
+  },
+  {
+   "name": "B_big130k_during_4x8k",
+   "big": 130000,
+   "small_n": 4,
+   "small_len": 8000,
+   "small_delay": 20,
+   "results": [
+    {
+     "tag": "big",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 65.8
+    },
+    {
+     "tag": "small1",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 45.8
+    },
+    {
+     "tag": "small0",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 45.8
+    },
+    {
+     "tag": "small2",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 45.7
+    },
+    {
+     "tag": "small3",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 49.5
+    }
+   ]
+  },
+  {
+   "name": "C_4x32k",
+   "big": 0,
+   "small_n": 4,
+   "small_len": 32000,
+   "small_delay": 0,
+   "results": [
+    {
+     "tag": "small3",
+     "status": 200,
+     "body": null,
+     "n_prompt": 32000,
+     "s": 66.0
+    },
+    {
+     "tag": "small0",
+     "status": 200,
+     "body": null,
+     "n_prompt": 32000,
+     "s": 66.8
+    },
+    {
+     "tag": "small1",
+     "status": 200,
+     "body": null,
+     "n_prompt": 32000,
+     "s": 67.2
+    },
+    {
+     "tag": "small2",
+     "status": 200,
+     "body": null,
+     "n_prompt": 32000,
+     "s": 67.6
+    }
+   ]
+  },
+  {
+   "name": "D_4x40k_exceeds_pool",
+   "big": 0,
+   "small_n": 4,
+   "small_len": 40000,
+   "small_delay": 0,
+   "results": [
+    {
+     "tag": "small0",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 68.1
+    },
+    {
+     "tag": "small1",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 68.0
+    },
+    {
+     "tag": "small2",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 67.9
+    },
+    {
+     "tag": "small3",
+     "status": 500,
+     "body": "{\"error\":{\"code\":500,\"message\":\"Context size has been exceeded.\",\"type\":\"server_error\"}}",
+     "n_prompt": null,
+     "s": 67.8
+    }
+   ]
+  },
+  {
+   "name": "E_repeat_A",
+   "big": 130000,
+   "small_n": 4,
+   "small_len": 8000,
+   "small_delay": -1,
+   "results": [
+    {
+     "tag": "big",
+     "status": 200,
+     "body": null,
+     "n_prompt": 130000,
+     "s": 65.7
+    },
+    {
+     "tag": "small3",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.4
+    },
+    {
+     "tag": "small0",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.6
+    },
+    {
+     "tag": "small1",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.7
+    },
+    {
+     "tag": "small2",
+     "status": 200,
+     "body": null,
+     "n_prompt": 8000,
+     "s": 15.7
+    }
+   ]
+  }
+ ],
+ "session": "20261016T154319"
+}

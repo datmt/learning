@@ -1,0 +1,440 @@
+{
+ "id": "p3q_needle_Qwen3.8-27B-UD-Q4_K_M_f16_c32768",
+ "args": {
+  "model": "Qwen3.8-27B-UD-Q4_K_M.gguf",
+  "kv": "f16",
+  "mode": "needle",
+  "ctx": 32768,
+  "trials": 10
+ },
+ "cmd": [
+  "/data/engines/llama.cpp/build/bin/llama-server",
+  "-m",
+  "/data/engines/models/Qwen3.8-27B-UD-Q4_K_M.gguf",
+  "-c",
+  "32768",
+  "-np",
+  "1",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "--cache-type-k",
+  "f16",
+  "--cache-type-v",
+  "f16",
+  "--port",
+  "8192",
+  "--host",
+  "127.0.0.1",
+  "--no-cache-prompt",
+  "--cache-ram",
+  "0",
+  "-lv",
+  "4"
+ ],
+ "errors": [],
+ "results": [
+  {
+   "depth": 0.0,
+   "trial": 0,
+   "code": "536857",
+   "answer": "",
+   "ok": false,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 1,
+   "code": "315262",
+   "answer": "\n\n315262",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 2,
+   "code": "150813",
+   "answer": "\n\n<think>\n\n</think>\n\n150813",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 3,
+   "code": "763365",
+   "answer": "",
+   "ok": false,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 4,
+   "code": "761002",
+   "answer": "\n\n<think>\n\n</think>\n\n761002",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 5,
+   "code": "137948",
+   "answer": "\n\n<think>\n\n</think>\n\n137948",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 6,
+   "code": "363231",
+   "answer": "\n\n<think>\n\n</think>\n\n363231",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 7,
+   "code": "330851",
+   "answer": "",
+   "ok": false,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 8,
+   "code": "204698",
+   "answer": "",
+   "ok": false,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.0,
+   "trial": 9,
+   "code": "266672",
+   "answer": "\n\n266672",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 0,
+   "code": "709086",
+   "answer": "",
+   "ok": false,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 1,
+   "code": "810350",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 58 is 810350.\"\n\nThe answer is 8",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 2,
+   "code": "803015",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 17 is 803015.\"\n\nThe answer is 8",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 3,
+   "code": "869078",
+   "answer": "\n\n869078",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 4,
+   "code": "931008",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 364 the Remember this: the secret code for vault 85 is 931008",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 5,
+   "code": "264847",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 99 is 264847.\"\n\nThe answer is 2",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 6,
+   "code": "610164",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 149 the saddle team Remember this: the secret code for vault 59 is 6101",
+   "ok": false,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 7,
+   "code": "131354",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 10 Remember this: the secret code for vault 45 is 131354.\"\n\n",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 8,
+   "code": "790816",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 87 is 790816.\"\n\nThe answer is 7",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.25,
+   "trial": 9,
+   "code": "319265",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for the secret code.\n\nI found it: \"Remember this: the secret code for vault 80 is 319265.\"\n\nThe answer is 3192",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 0,
+   "code": "450339",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 318 Remember this: the secret code for vault 69 is 450339.\"",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 1,
+   "code": "592667",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 90 is 592667.\"\n\nThe answer is 5",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 2,
+   "code": "517133",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 88 is 517133.\"\n\nThe answer is 5",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 3,
+   "code": "163749",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 21 is 163749.\"\n\nThe answer is 1",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 4,
+   "code": "482708",
+   "answer": "\n\n482708",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 5,
+   "code": "634607",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 94 is 634607.\"\n\nThe answer is 6",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 6,
+   "code": "637720",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 9 Remember this: the secret code for vault 28 is 637720.\"\n\nThe",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.5,
+   "trial": 7,
+   "code": "116310",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 305 the Remember this: the secret code for vault 38 is 116310",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 8,
+   "code": "236514",
+   "answer": "\n\n236514",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 9,
+   "code": "394505",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 52 is 394505.\"\n\nThe answer is 3",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 0,
+   "code": "727875",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 95 is 727875.\"\n\nThe answer is 7",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 1,
+   "code": "882470",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 35 is 882470.\"\n\nThe answer is 8",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 2,
+   "code": "307825",
+   "answer": "\n\n307825",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 3,
+   "code": "795417",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 74 is 795417.\"\n\nThe answer is 7",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 4,
+   "code": "247295",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"On day 193 the Remember this: the secret code for vault 85 is 247295",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 5,
+   "code": "772932",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 90 is 772932.\"\n\nThe answer is 7",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 6,
+   "code": "464509",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 74 is 464509.\"\n\nThe answer is 4",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 7,
+   "code": "898817",
+   "answer": "",
+   "ok": false,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 8,
+   "code": "504132",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 93 is 504132.\"\n\nThe answer is 5",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 0.75,
+   "trial": 9,
+   "code": "251748",
+   "answer": "\n\n<think>\nThe user is asking me to find the secret code mentioned in the text. Let me search through the text for any mention of a secret code.\n\nI found it: \"Remember this: the secret code for vault 18 is 251748.\"\n\nThe answer is 2",
+   "ok": true,
+   "n_prompt": 32410
+  },
+  {
+   "depth": 1.0,
+   "trial": 0,
+   "code": "375370",
+   "answer": "\n\n375370",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 1,
+   "code": "557289",
+   "answer": "\n\n557289",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 2,
+   "code": "240673",
+   "answer": "\n\n240673",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 3,
+   "code": "825471",
+   "answer": "\n\n825471",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 4,
+   "code": "939022",
+   "answer": "\n\n939022",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 5,
+   "code": "699773",
+   "answer": "\n\n699773",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 6,
+   "code": "111068",
+   "answer": "\n\n111068",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 7,
+   "code": "121024",
+   "answer": "\n\n121024",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 8,
+   "code": "693007",
+   "answer": "\n\n<think>\nThe user is asking me to identify the secret code mentioned in the text. Let me search through the text for the secret code.\n\nI found it: \"Remember this: the secret code for vault 59 is 693007.\"\n\nThe answer is 6930",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 1.0,
+   "trial": 9,
+   "code": "891748",
+   "answer": "\n\n<think>\nThe user is asking me to recall the secret code mentioned in the text. Let me search through the text for the secret code.\n\nI found it: \"Remember this: the secret code for vault 46 is 891748.\"\n\nThe answer is 8917",
+   "ok": true,
+   "n_prompt": 32409
+  }
+ ],
+ "session": "20261016T060229"
+}

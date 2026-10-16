@@ -1,0 +1,840 @@
+{
+ "id": "p3q_needle_Qwen3-8B-BF16_f16_c8192",
+ "args": {
+  "model": "Qwen3-8B-BF16.gguf",
+  "kv": "f16",
+  "mode": "needle",
+  "ctx": 8192,
+  "trials": 20
+ },
+ "cmd": [
+  "/data/engines/llama.cpp/build/bin/llama-server",
+  "-m",
+  "/data/engines/models/Qwen3-8B-BF16.gguf",
+  "-c",
+  "8192",
+  "-np",
+  "1",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "--cache-type-k",
+  "f16",
+  "--cache-type-v",
+  "f16",
+  "--port",
+  "8192",
+  "--host",
+  "127.0.0.1",
+  "--no-cache-prompt",
+  "--cache-ram",
+  "0",
+  "-lv",
+  "4"
+ ],
+ "errors": [],
+ "results": [
+  {
+   "depth": 0.0,
+   "trial": 0,
+   "code": "536857",
+   "answer": " mentioned as \"the secret code for vault 11 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 1,
+   "code": "461689",
+   "answer": " mentioned as \"the secret code for vault 91 is",
+   "ok": false,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.0,
+   "trial": 2,
+   "code": "297316",
+   "answer": " mentioned as \"the secret code for vault 31 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 3,
+   "code": "795015",
+   "answer": " 795015.\nAnswer: 7",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 4,
+   "code": "746853",
+   "answer": " mentioned as \"the secret code for vault 77 is",
+   "ok": false,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.0,
+   "trial": 5,
+   "code": "282722",
+   "answer": " mentioned as \"the secret code for vault 98 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 6,
+   "code": "523942",
+   "answer": " mentioned as \"the secret code for vault 56 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 7,
+   "code": "459723",
+   "answer": " mentioned at the beginning of the text: \"Remember this:",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 8,
+   "code": "539032",
+   "answer": " mentioned as \"the secret code for vault 63 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 9,
+   "code": "348408",
+   "answer": " mentioned as \"348408\" in the",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 10,
+   "code": "182918",
+   "answer": " 182918.\nAnswer: 1",
+   "ok": true,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.0,
+   "trial": 11,
+   "code": "814946",
+   "answer": " mentioned at the beginning of the text: \"Remember this:",
+   "ok": false,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.0,
+   "trial": 12,
+   "code": "388222",
+   "answer": " mentioned as \"the secret code for vault 21 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 13,
+   "code": "597117",
+   "answer": " 597117.\nAnswer: 5",
+   "ok": true,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.0,
+   "trial": 14,
+   "code": "242465",
+   "answer": " 242465.\nAnswer: 2",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 15,
+   "code": "166138",
+   "answer": " mentioned as \"the secret code for vault 65 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 16,
+   "code": "389921",
+   "answer": " mentioned at the beginning of the text: \"Remember this:",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 17,
+   "code": "505910",
+   "answer": " mentioned as \"the secret code for vault 55 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 18,
+   "code": "256737",
+   "answer": " mentioned at the beginning of the text: \"Remember this:",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.0,
+   "trial": 19,
+   "code": "383849",
+   "answer": " 383849.\nAnswer: 3",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.25,
+   "trial": 0,
+   "code": "663463",
+   "answer": " given as \"663463\" in the",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 1,
+   "code": "292748",
+   "answer": " mentioned as \"the secret code for vault 31 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 2,
+   "code": "257520",
+   "answer": " mentioned as \"the secret code for vault 90 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 3,
+   "code": "653455",
+   "answer": " 653455.\nAnswer: 6",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.25,
+   "trial": 4,
+   "code": "414024",
+   "answer": " mentioned as \"the secret code for vault 34 is",
+   "ok": false,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.25,
+   "trial": 5,
+   "code": "507839",
+   "answer": " 507839. The question asks for",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 6,
+   "code": "107052",
+   "answer": " mentioned as \"the secret code for vault 31 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 7,
+   "code": "384329",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 8,
+   "code": "838445",
+   "answer": " mentioned as \"the secret code for vault 42 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.25,
+   "trial": 9,
+   "code": "430941",
+   "answer": " given as \"430941\" in the",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 10,
+   "code": "243025",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.25,
+   "trial": 11,
+   "code": "481291",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 12,
+   "code": "152170",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 13,
+   "code": "545101",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 14,
+   "code": "871316",
+   "answer": " mentioned as \"the secret code for vault 37 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 15,
+   "code": "276365",
+   "answer": " 276365.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.25,
+   "trial": 16,
+   "code": "436527",
+   "answer": " given as \"the secret code for vault 47 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.25,
+   "trial": 17,
+   "code": "746369",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 18,
+   "code": "123444",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.25,
+   "trial": 19,
+   "code": "745335",
+   "answer": " given as \"745335\" in the",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 0,
+   "code": "863717",
+   "answer": " mentioned as \"the secret code for vault 88 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 1,
+   "code": "599431",
+   "answer": " 599431.\nAnswer: 5",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 2,
+   "code": "671384",
+   "answer": " given as \"671384\" in the",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 3,
+   "code": "549227",
+   "answer": " 549227.\nAnswer: 5",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 4,
+   "code": "685089",
+   "answer": " 685089.\nAnswer: 6",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 5,
+   "code": "698283",
+   "answer": " 698283.\nAnswer: 6",
+   "ok": true,
+   "n_prompt": 7835
+  },
+  {
+   "depth": 0.5,
+   "trial": 6,
+   "code": "567336",
+   "answer": " mentioned as \"the secret code for vault 99 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 7,
+   "code": "204829",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 8,
+   "code": "144939",
+   "answer": " mentioned as \"the secret code for vault 24 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 9,
+   "code": "278383",
+   "answer": " 278383, which is explicitly mentioned",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 10,
+   "code": "481359",
+   "answer": " mentioned as \"the secret code for vault 18 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 11,
+   "code": "429672",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 12,
+   "code": "317529",
+   "answer": " 317529. I found it in",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 13,
+   "code": "965844",
+   "answer": " 965844, which is explicitly stated",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.5,
+   "trial": 14,
+   "code": "194400",
+   "answer": " mentioned as \"Remember this: the secret code for vault ",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 15,
+   "code": "321972",
+   "answer": " mentioned as \"the secret code for vault 41 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 16,
+   "code": "539074",
+   "answer": " 539074.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.5,
+   "trial": 17,
+   "code": "866372",
+   "answer": " 866372.\nAnswer: 8",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.5,
+   "trial": 18,
+   "code": "525513",
+   "answer": " mentioned as \"the secret code for vault 91 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.5,
+   "trial": 19,
+   "code": "550888",
+   "answer": " mentioned as \"the secret code for vault 92 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 0,
+   "code": "118148",
+   "answer": " mentioned as \"the secret code for vault 65 is",
+   "ok": false,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 1,
+   "code": "842028",
+   "answer": " 842028.\nAnswer: 8",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 2,
+   "code": "583437",
+   "answer": " 583437.\nAnswer: 5",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 3,
+   "code": "381737",
+   "answer": " 381737.\nAnswer: 3",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.75,
+   "trial": 4,
+   "code": "969660",
+   "answer": " 969660.\nAnswer: 9",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 5,
+   "code": "871528",
+   "answer": " 871528.\nAnswer: 8",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 6,
+   "code": "342727",
+   "answer": " 342727.\nAnswer: 3",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 7,
+   "code": "704103",
+   "answer": " 704103. The question asks for",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 8,
+   "code": "886354",
+   "answer": " 886354.\nAnswer: 8",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 9,
+   "code": "134477",
+   "answer": " 134477.\nAnswer: 1",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 10,
+   "code": "438207",
+   "answer": " 438207.\nAnswer: 4",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 11,
+   "code": "565890",
+   "answer": " 565890. I found it in",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 12,
+   "code": "789272",
+   "answer": " 789272.\nAnswer: 7",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 13,
+   "code": "714867",
+   "answer": " 714867.\nAnswer: 7",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 14,
+   "code": "754021",
+   "answer": " 754021.\nAnswer: 7",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.75,
+   "trial": 15,
+   "code": "186431",
+   "answer": " mentioned as \"the secret code for vault 47 is",
+   "ok": false,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 0.75,
+   "trial": 16,
+   "code": "943471",
+   "answer": " 943471.\nAnswer: 9",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 17,
+   "code": "236970",
+   "answer": " 236970.\nAnswer: 2",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 18,
+   "code": "181446",
+   "answer": " 181446.\nAnswer: 1",
+   "ok": true,
+   "n_prompt": 7837
+  },
+  {
+   "depth": 0.75,
+   "trial": 19,
+   "code": "468079",
+   "answer": " 468079. It's mentioned in",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 0,
+   "code": "732707",
+   "answer": " 732707.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 1,
+   "code": "244602",
+   "answer": " 244602.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 2,
+   "code": "556678",
+   "answer": " 556678.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 3,
+   "code": "985506",
+   "answer": " 985506.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 4,
+   "code": "569404",
+   "answer": " 569404.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 5,
+   "code": "103098",
+   "answer": " 103098.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 6,
+   "code": "340402",
+   "answer": " 340402.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 7,
+   "code": "315403",
+   "answer": " 315403.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 8,
+   "code": "120324",
+   "answer": " 120324.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 9,
+   "code": "177452",
+   "answer": " 177452.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 10,
+   "code": "360534",
+   "answer": " 360534.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 11,
+   "code": "257564",
+   "answer": " 257564.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 12,
+   "code": "849462",
+   "answer": " 849462.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 13,
+   "code": "753264",
+   "answer": " 753264.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 14,
+   "code": "867466",
+   "answer": " 867466.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 15,
+   "code": "362062",
+   "answer": " 362062.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 16,
+   "code": "961021",
+   "answer": " 961021.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 17,
+   "code": "576454",
+   "answer": " 576454.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 18,
+   "code": "338015",
+   "answer": " 338015.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  },
+  {
+   "depth": 1.0,
+   "trial": 19,
+   "code": "417552",
+   "answer": " 417552.\nOkay, let me",
+   "ok": true,
+   "n_prompt": 7836
+  }
+ ],
+ "session": "20261016T010510"
+}

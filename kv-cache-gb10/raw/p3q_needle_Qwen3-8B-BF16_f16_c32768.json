@@ -1,0 +1,840 @@
+{
+ "id": "p3q_needle_Qwen3-8B-BF16_f16_c32768",
+ "args": {
+  "model": "Qwen3-8B-BF16.gguf",
+  "kv": "f16",
+  "mode": "needle",
+  "ctx": 32768,
+  "trials": 20
+ },
+ "cmd": [
+  "/data/engines/llama.cpp/build/bin/llama-server",
+  "-m",
+  "/data/engines/models/Qwen3-8B-BF16.gguf",
+  "-c",
+  "32768",
+  "-np",
+  "1",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "--cache-type-k",
+  "f16",
+  "--cache-type-v",
+  "f16",
+  "--port",
+  "8192",
+  "--host",
+  "127.0.0.1",
+  "--no-cache-prompt",
+  "--cache-ram",
+  "0",
+  "-lv",
+  "4"
+ ],
+ "errors": [],
+ "results": [
+  {
+   "depth": 0.0,
+   "trial": 0,
+   "code": "536857",
+   "answer": " 536857\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 1,
+   "code": "315262",
+   "answer": " 315262\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 2,
+   "code": "150813",
+   "answer": " 150813\nOkay, let me try to figure this out. The user provided a long list of events with various teams moving things past each other on specific days. But the question is asking for the secret code mentioned above. \n\nLooking back at the beginning of the provided text, the first sentence",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 3,
+   "code": "763365",
+   "answer": " 763365\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 4,
+   "code": "761002",
+   "answer": " 761002\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nFirst,",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 5,
+   "code": "137948",
+   "answer": " 137948\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. But the question is asking for the secret code mentioned above. \n\nLooking through the text, I remember that sometimes in these",
+   "ok": true,
+   "n_prompt": 32407
+  },
+  {
+   "depth": 0.0,
+   "trial": 6,
+   "code": "363231",
+   "answer": " 363231\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they ask for the secret code mentioned above, which they say is the six digits. \n\nFirst, I need",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 7,
+   "code": "330851",
+   "answer": " 330851\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back at",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 8,
+   "code": "204698",
+   "answer": " 204698\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they mentioned, \"Remember this: the secret code for vault 20 is 20469",
+   "ok": true,
+   "n_prompt": 32407
+  },
+  {
+   "depth": 0.0,
+   "trial": 9,
+   "code": "266672",
+   "answer": " 266672\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past different objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nFirst, I",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 10,
+   "code": "709086",
+   "answer": " 709086\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. But the question is asking for the secret code mentioned above. \n\nLooking back at the problem, the first line after the",
+   "ok": true,
+   "n_prompt": 32407
+  },
+  {
+   "depth": 0.0,
+   "trial": 11,
+   "code": "810350",
+   "answer": " 810350\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past different locations on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back at",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 12,
+   "code": "803015",
+   "answer": " 803015\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 13,
+   "code": "869078",
+   "answer": " 869078\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past different objects on specific days. Then they mentioned that the secret code for vault 13 is 869078. The question is",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 14,
+   "code": "931008",
+   "answer": " 931008\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nFirst,",
+   "ok": true,
+   "n_prompt": 32407
+  },
+  {
+   "depth": 0.0,
+   "trial": 15,
+   "code": "264847",
+   "answer": " 264847\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain places on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 16,
+   "code": "610164",
+   "answer": " 610164\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back at",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 17,
+   "code": "131354",
+   "answer": " 131354\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. But the question is asking for the secret code mentioned above. \n\nLooking back at the beginning of the provided text, the",
+   "ok": true,
+   "n_prompt": 32407
+  },
+  {
+   "depth": 0.0,
+   "trial": 18,
+   "code": "790816",
+   "answer": " 790816\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they asked, \"What is the secret code mentioned above? Answer with the six digits only.\" \n\nLooking back",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.0,
+   "trial": 19,
+   "code": "319265",
+   "answer": " 319265\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. But the question is asking for the secret code mentioned above. \n\nLooking back at the problem, the first sentence says,",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.25,
+   "trial": 0,
+   "code": "450339",
+   "answer": " 450339\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they mentioned, \"Remember this: the secret code for vault 69 is 45033",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.25,
+   "trial": 1,
+   "code": "592667",
+   "answer": " 592667\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault ",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 2,
+   "code": "517133",
+   "answer": " 517133\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they mentioned, \"Remember this: the secret code for vault 88 is 51713",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.25,
+   "trial": 3,
+   "code": "163749",
+   "answer": " 163749\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past other items on specific days. Then, they mentioned, \"Remember this: the secret code for vault 21 is 1637",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 4,
+   "code": "482708",
+   "answer": " 482708\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned \"Remember this: the secret code for vault 21 is 48270",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.25,
+   "trial": 5,
+   "code": "634607",
+   "answer": " 634607\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past different objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 94 is 63460",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 6,
+   "code": "637720",
+   "answer": " 637720\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault ",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.25,
+   "trial": 7,
+   "code": "116310",
+   "answer": " 116310\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 38 is 1163",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 8,
+   "code": "236514",
+   "answer": " 236514\nThe secret code mentioned in the text is explicitly stated as \"the secret code for vault 67 is 236514.\" Therefore, the six-digit code is 236514. \n\nAnswer: 236514\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 9,
+   "code": "394505",
+   "answer": " 394505\nThe secret code mentioned in the text is explicitly stated as \"the secret code for vault 52 is 394505.\" Therefore, the six-digit code is 394505. \n\nAnswer: 394505\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 10,
+   "code": "727875",
+   "answer": " 727875\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past different objects on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault 9",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 11,
+   "code": "882470",
+   "answer": " 882470\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 35 is 8824",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 12,
+   "code": "307825",
+   "answer": " 307825\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned \"Remember this: the secret code for vault 84 is 30782",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 13,
+   "code": "795417",
+   "answer": " 795417\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 74 is 7954",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 14,
+   "code": "247295",
+   "answer": " 247295\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 85 is 2472",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.25,
+   "trial": 15,
+   "code": "772932",
+   "answer": " 772932\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault ",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 16,
+   "code": "464509",
+   "answer": " 464509\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 74 is 4645",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 17,
+   "code": "898817",
+   "answer": " 898817\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain locations on specific days. Then, near the end of the list, there's a line that says: \"Remember this: the secret code",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 18,
+   "code": "504132",
+   "answer": " 504132\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault ",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.25,
+   "trial": 19,
+   "code": "251748",
+   "answer": " 251748\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they mentioned, \"Remember this: the secret code for vault 18 is 25174",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.5,
+   "trial": 0,
+   "code": "375370",
+   "answer": " 375370\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain locations on specific days. Then, they mentioned, \"Remember this: the secret code for vault 92 is 3753",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 1,
+   "code": "557289",
+   "answer": " 557289\nThe secret code mentioned in the text is explicitly given as \"the secret code for vault 57 is 557289.\" Therefore, the six-digit code is 557289. \n\nAnswer: 557289\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 2,
+   "code": "240673",
+   "answer": " 240673\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain things on specific days. Then, they mentioned, \"Remember this: the secret code for vault 84 is 2406",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 3,
+   "code": "825471",
+   "answer": " 825471\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 80 is 8254",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 4,
+   "code": "939022",
+   "answer": " 939022\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 58 is 9390",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.5,
+   "trial": 5,
+   "code": "699773",
+   "answer": " 699773\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 99 is 69977",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.5,
+   "trial": 6,
+   "code": "111068",
+   "answer": " 111068\nThe secret code mentioned in the text is explicitly given as \"the secret code for vault 83 is 111068.\" Therefore, the six-digit code is 111068. \n\nAnswer: 111068\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 7,
+   "code": "121024",
+   "answer": " 121024\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain things on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault ",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 8,
+   "code": "693007",
+   "answer": " 693007\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 59 is 6930",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 9,
+   "code": "891748",
+   "answer": " 891748\nThe secret code mentioned in the text is \"891748\". It is explicitly stated in the line: \"Remember this: the secret code for vault 46 is 891748.\" Therefore, the six-digit code is 891",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 10,
+   "code": "498560",
+   "answer": " 498560\nThe secret code mentioned in the text is \"498560\". This code is explicitly stated in the line: \"Remember this: the secret code for vault 30 is 498560.\" Therefore, the six-digit code is 49",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 11,
+   "code": "210827",
+   "answer": " 210827\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 41 is 2108",
+   "ok": true,
+   "n_prompt": 32407
+  },
+  {
+   "depth": 0.5,
+   "trial": 12,
+   "code": "720522",
+   "answer": " 720522\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 76 is 7205",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 13,
+   "code": "211629",
+   "answer": " 211629\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 10 is 2116",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 14,
+   "code": "874998",
+   "answer": " 874998\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain locations on specific days. Then, they mentioned, \"Remember this: the secret code for vault 15 is 8749",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.5,
+   "trial": 15,
+   "code": "156064",
+   "answer": " 156064\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 40 is 1560",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 16,
+   "code": "316994",
+   "answer": " 316994\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 26 is 3169",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.5,
+   "trial": 17,
+   "code": "475878",
+   "answer": " 475878\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past other teams on specific days. Then, they mentioned, \"Remember this: the secret code for vault 23 is 4758",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.5,
+   "trial": 18,
+   "code": "262636",
+   "answer": " 262636\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 39 is 2626",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.5,
+   "trial": 19,
+   "code": "721996",
+   "answer": " 721996\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving things past different locations on specific days. Then, they mentioned, \"Remember this: the secret code for vault 67 is 72199",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.75,
+   "trial": 0,
+   "code": "372537",
+   "answer": " 372537\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain locations on specific days. Then, they mentioned, \"Remember this: the secret code for vault 26 is 3725",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 1,
+   "code": "308952",
+   "answer": " 308952\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 75 is 3089",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 2,
+   "code": "603540",
+   "answer": " 603540\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 42 is 6035",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.75,
+   "trial": 3,
+   "code": "736088",
+   "answer": " 736088\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving items past certain objects on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for vault 5",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 4,
+   "code": "165990",
+   "answer": " 165990\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they mentioned, \"Remember this: the secret code for vault 99 is 16599",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 5,
+   "code": "318838",
+   "answer": " 318838\nThe secret code mentioned in the text is explicitly stated as \"the secret code for vault 35 is 318838.\" Therefore, the six-digit code is 318838. \n\nAnswer: 318838\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 6,
+   "code": "213267",
+   "answer": " 213267\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 87 is 2132",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 7,
+   "code": "879136",
+   "answer": " 879136\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 70 is 8791",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.75,
+   "trial": 8,
+   "code": "651740",
+   "answer": " 651740\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 36 is 6517",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 9,
+   "code": "685658",
+   "answer": " 685658\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 42 is 6856",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.75,
+   "trial": 10,
+   "code": "765441",
+   "answer": " 765441\nThe secret code mentioned in the text is explicitly stated as \"the secret code for vault 50 is 765441.\" Therefore, the six-digit code is 765441. \n\nAnswer: 765441\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 11,
+   "code": "512670",
+   "answer": " 512670\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 62 is 5126",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 12,
+   "code": "655198",
+   "answer": " 655198\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 41 is 6551",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.75,
+   "trial": 13,
+   "code": "166263",
+   "answer": " 166263\nThe secret code mentioned in the text is explicitly stated as \"the secret code for vault 96 is 166263.\" Therefore, the six-digit code is 166263. \n\nAnswer: 166263\nThe",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 14,
+   "code": "658287",
+   "answer": " 658287\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain locations on specific days. Then, near the end of the list, there's a line that says: \"Remember this: the secret code",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 15,
+   "code": "580564",
+   "answer": " 580564\nThe secret code mentioned in the text is explicitly stated as \"the secret code for vault 97 is 580564.\" Therefore, the six-digit code is 580564. \n\nAnswer: 580564\nThe",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 0.75,
+   "trial": 16,
+   "code": "341878",
+   "answer": " 341878\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 25 is 3418",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 17,
+   "code": "897084",
+   "answer": " 897084\nThe secret code mentioned in the text is 897084. It is explicitly stated as \"Remember this: the secret code for vault 29 is 897084.\" Therefore, the six-digit code is 897084",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 18,
+   "code": "845921",
+   "answer": " 845921\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 62 is 8459",
+   "ok": true,
+   "n_prompt": 32409
+  },
+  {
+   "depth": 0.75,
+   "trial": 19,
+   "code": "747006",
+   "answer": " 747006\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 56 is 7470",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 0,
+   "code": "508077",
+   "answer": " 508077\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, near the end of that list, there's a line that says: \"On day ",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 1,
+   "code": "811865",
+   "answer": " 811865\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with dates and various teams moving different items past certain things. Then, at the end, they mention: \"Remember this: the secret code for vault 72",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 2,
+   "code": "916363",
+   "answer": " 916363\nOkay, let me try to figure out what the user is asking here. They provided a long list of events with various teams moving different items past other items on specific days. Then they mention a secret code for vault 12 as 916363 and ask",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 3,
+   "code": "295333",
+   "answer": " 295333\nOkay, let me try to figure out what the user is asking here. They provided a long list of events with various teams moving different items past certain objects on specific days. Then they mention a secret code for vault 18 as 295333 and ask",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 4,
+   "code": "790414",
+   "answer": " 790414\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with dates and various movements of different teams, and then they mentioned \"Remember this: the secret code for vault 47 is 790414",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 5,
+   "code": "362110",
+   "answer": " 362110\nOkay, let me try to figure out the answer here. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then they mentioned, \"Remember this: the secret code for vault 36 is 36211",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 6,
+   "code": "247176",
+   "answer": " 247176\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with dates and various teams moving things past each other. Then they mentioned, \"Remember this: the secret code for vault 23 is 2471",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 7,
+   "code": "738972",
+   "answer": " 738972\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with various teams moving things past each other on specific days. Then, near the end, there's a line that says: \"Remember this: the secret code for",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 8,
+   "code": "840961",
+   "answer": " 840961\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with various teams moving different items past certain places on specific days. Then, they mentioned, \"Remember this: the secret code for vault 21 is 8",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 9,
+   "code": "879759",
+   "answer": " 879759\nOkay, let me try to figure out what the user is asking here. They provided a long list of events with various teams moving different items past certain objects on specific days. Then they mention a secret code for vault 79 as 879759 and ask",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 10,
+   "code": "453338",
+   "answer": " 453338\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with various teams moving things past each other on specific days. Then, they mentioned, \"Remember this: the secret code for vault 96 is 45",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 11,
+   "code": "937593",
+   "answer": " 937593\nOkay, let me try to figure out what the secret code is here. The user provided a bunch of events with dates and some movements of different teams, and then they mentioned that the secret code for vault 77 is 937593. The question is",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 12,
+   "code": "584122",
+   "answer": " 584122\nOkay, let me try to figure out what the secret code is. The user provided a long list of events with various teams moving different items past certain objects on specific days. Then, they mentioned, \"Remember this: the secret code for vault 85 is 58",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 13,
+   "code": "212255",
+   "answer": " 212255\nOkay, let me try to figure out what the secret code is here. The user provided a bunch of data entries, each with a day, a team, and some movement of items past something else. Then they mentioned, \"Remember this: the secret code for vault 3",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 14,
+   "code": "733771",
+   "answer": " 733771\nOkay, let me try to figure out what the user is asking here. They provided a long list of events with various teams moving different items past certain objects on specific days. Then they mention a secret code for vault 51 as 733771 and ask",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 15,
+   "code": "298181",
+   "answer": " 298181\nOkay, let me try to figure out what the secret code is here. The user provided a bunch of events with dates and movements, and then mentioned that the secret code for vault 95 is 298181. The question is asking for the secret code",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 16,
+   "code": "991833",
+   "answer": " 991833\nOkay, let me try to figure out what the user is asking here. They provided a long list of events with various teams moving different items past certain objects on specific days. Then they mention a secret code for vault 64 as 991833 and ask",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 17,
+   "code": "266185",
+   "answer": " 266185\nOkay, let me try to figure out what the user is asking here. They provided a long list of events with various teams moving different items past each other on specific days. Then they mention a secret code for vault 90 is 266185. The",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 18,
+   "code": "376038",
+   "answer": " 376038\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with dates and various teams moving items past certain objects. Then, at the end, they mention: \"Remember this: the secret code for vault 58 is",
+   "ok": true,
+   "n_prompt": 32408
+  },
+  {
+   "depth": 1.0,
+   "trial": 19,
+   "code": "836358",
+   "answer": " 836358\nOkay, let me try to figure out what the secret code is here. The user provided a long list of events with various teams moving items past each other on specific days. Then, near the end, there's a line that says: \"On day 252 Remember",
+   "ok": true,
+   "n_prompt": 32408
+  }
+ ],
+ "session": "20261016T020227"
+}
