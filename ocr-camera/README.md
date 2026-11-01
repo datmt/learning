@@ -118,9 +118,15 @@ Common to both: CTC loss, AdamW optimiser (weight decay 0.01), a one-cycle learn
 | `webapp/server.py`, `webapp/static/display.html` | the collection app |
 | `webapp/lines.py`, `webapp/deskew.py` | line splitting, tilt voting |
 | `eval_reader_log.py` | score saved phone reads with the current model |
+| `static-app/` | the browser-only version (no server) |
+| `quantize_int8.py` | fp32 ONNX to int8 ONNX |
 | `model/` | best model: `crnn_final_synthetic.pt` (PyTorch) and `crnn.onnx` (what the app loads) |
 
 The photos are not included.
+
+## Run it as a static web app (no Docker)
+
+`static-app/` runs the model in the browser, using an int8 version of the model (7.5 MB, same accuracy in my test), so it can be hosted as plain files, for example on Cloudflare Pages. See [`static-app/README.md`](static-app/README.md) for how it was checked and what is untested.
 
 ## Run the web app with the model (Docker)
 

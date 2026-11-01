@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Password OCR (runs in your browser)</title>
+<style>
+body{margin:0;background:#111;color:#eee;font:15px system-ui,sans-serif}
+#stage{position:relative;background:#000}
+video{width:100%;max-height:55vh;display:block;object-fit:contain}
+#box{position:absolute;border:2px solid #4f8;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none}
+#bar{padding:8px 10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font-size:18px;padding:10px 16px;border-radius:8px;border:0;background:#2a7;color:#fff}
+button:disabled{background:#555}button.sec{background:#445}
+#res{padding:8px 12px}
+#text{white-space:pre-wrap;font:26px ui-monospace,monospace;word-break:break-all;background:#222;padding:10px;border-radius:8px;min-height:1.4em}
+#text span.lo{background:#a52;border-radius:3px}
+#seen{width:100%;max-width:640px;display:block;margin-top:8px;border-radius:6px}
+#meta{color:#999;font-size:13px;margin-top:4px}
+</style></head><body>
+<div id="stage"><video id="v" autoplay playsinline muted></video><div id="box"></div></div>
+<div id="bar">
+  <button id="shoot" disabled>Loading model…</button>
+  <label><input type="file" id="file" accept="image/*" hidden><button class="sec" onclick="file.click()">Upload photo</button></label>
+  <label>box width <input type="range" id="bw" min="30" max="100" value="90"></label>
+  <label><input type="checkbox" id="tta" checked> tilt-robust (9 angles, vote)</label>
+  <label><input type="checkbox" id="lines"> multi-line</label>
+</div>
+<div id="res"><div id="text">–</div><div id="meta">Everything runs on this device. No photo is uploaded.</div><canvas id="seen" hidden></canvas></div>
+<script src="vendor/ort.wasm.min.js"></script>
+<script src="ocr.js"></script>
+<script>
+const $=id=>document.getElementById(id), v=$('v'), box=$('box'), ASPECT=3.1;
+ort.env.wasm.wasmPaths=new URL('vendor/',location.href).href; ort.env.wasm.numThreads=1;     // 1 thread: multi-thread needs special HTTP headers
+let session=null, busy=false;
+ort.InferenceSession.create('model/crnn_int8.onnx').then(s=>{ session=s; $('shoot').disabled=false; $('shoot').textContent='Read'; }).catch(e=>{ $('shoot').textContent='Model failed'; $('meta').textContent=String(e); });
+async function start(){
+  try{ v.srcObject=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}}}); }
+  catch(e){ $('meta').textContent='Camera unavailable ('+e.message+') - use Upload photo'; }
+}
+function dispRect(){ const r=v.getBoundingClientRect(), s=Math.min(r.width/v.videoWidth, r.height/v.videoHeight)||1, w=v.videoWidth*s, h=v.videoHeight*s; return {x:(r.width-w)/2,y:(r.height-h)/2,w,h,s}; }
+function layout(){
+  if(!v.videoWidth) return; const d=dispRect(); let bw=d.w*$('bw').value/100, bh=bw/ASPECT; if(bh>d.h){bh=d.h; bw=bh*ASPECT;}
+  Object.assign(box.style,{left:(d.x+(d.w-bw)/2)+'px',top:(d.y+(d.h-bh)/2)+'px',width:bw+'px',height:bh+'px'});
+}
+['loadedmetadata','resize'].forEach(e=>v.addEventListener(e,layout)); window.addEventListener('resize',layout); $('bw').oninput=layout;
+function guideCanvas(){
+  const d=dispRect(), bw=d.w*$('bw').value/100; let w=bw/d.s, h=w/ASPECT; if(h>v.videoHeight){h=v.videoHeight; w=h*ASPECT;}
+  const x=(v.videoWidth-w)/2, y=(v.videoHeight-h)/2, c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h);
+  c.getContext('2d').drawImage(v,x,y,w,h,0,0,c.width,c.height); return c;
+}
+function toGray(c){   // same grey formula as OpenCV: 0.299 R + 0.587 G + 0.114 B
+  const {data,width,height}=c.getContext('2d').getImageData(0,0,c.width,c.height), g=new Uint8Array(width*height);
+  for(let i=0;i<g.length;i++) g[i]=Math.round(0.299*data[4*i]+0.587*data[4*i+1]+0.114*data[4*i+2]); return {w:width,h:height,d:g};
+}
+async function readCanvas(c){
+  if(busy||!session) return; busy=true; $('shoot').disabled=true; $('meta').textContent='reading…'; await new Promise(r=>setTimeout(r,30));
+  try{
+    const t=performance.now(), r=await OCR.read(session, ort.Tensor, toGray(c), {tilt:$('tta').checked, lines:$('lines').checked}), ms=Math.round(performance.now()-t);
+    $('text').innerHTML=[...r.text].map((ch,i)=>`<span class="${r.conf[i]<0.8?'lo':''}">${ch.replace('&','&amp;').replace('<','&lt;')}</span>`).join('')||'(nothing read)';
+    $('meta').textContent=`${r.text.replace(/\n/g,'').length} chars · ${r.agree[1]>1?('agreement '+r.agree[0]+'/'+r.agree[1]+' angles · '):''}${ms} ms · orange = low confidence (<80%)`;
+    const s=$('seen'); s.width=c.width; s.height=c.height; s.getContext('2d').drawImage(c,0,0); s.hidden=false;
+  }catch(e){ $('meta').textContent='read failed: '+e.message; }
+  busy=false; $('shoot').disabled=false;
+}
+$('shoot').onclick=()=>readCanvas(guideCanvas());
+$('file').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const im=await createImageBitmap(f), c=document.createElement('canvas'); c.width=im.width; c.height=im.height; c.getContext('2d').drawImage(im,0,0); readCanvas(c); e.target.value=''; };
+start();
+</script></body></html>
