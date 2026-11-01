@@ -1,0 +1,7 @@
+# serving only (the Docker image installs this)
+fastapi
+uvicorn
+python-multipart
+onnxruntime
+opencv-python-headless
+numpy

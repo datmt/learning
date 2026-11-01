@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>capture</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#111;color:#eee;font:15px system-ui,sans-serif}
+  #wrap{display:flex;flex-direction:column;height:100%}
+  video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
+  #bar{padding:8px 10px;background:#1b1b1b}
+  #cur{font:600 18px ui-monospace,monospace;word-break:break-all;color:#7fdc8f;min-height:24px}
+  #stat{font-size:13px;color:#aaa;margin:2px 0 8px}
+  .row{display:flex;gap:8px}
+  button{flex:1;padding:14px 8px;font-size:17px;border:0;border-radius:10px;background:#333;color:#fff}
+  #cap{background:#2a7de1;font-weight:700}
+  #cap:disabled{background:#2a3a55;color:#789}
+  #msg{font-size:13px;min-height:18px;color:#f0b050}
+  #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+  label{font-size:13px;color:#aaa}
+  input[type=number]{width:52px;background:#222;color:#fff;border:1px solid #444;border-radius:6px;padding:4px}
+</style></head><body>
+<div id="wrap">
+  <video id="v" autoplay playsinline muted></video>
+  <div id="bar">
+    <input id="setup" list="setups" placeholder="setup label (required), e.g. desk-lamp-phoneA" autocomplete="off"
+      style="width:100%;margin-bottom:6px;padding:8px;font-size:15px;background:#222;color:#fff;border:1px solid #555;border-radius:8px">
+    <datalist id="setups"></datalist>
+    <div id="cur">…</div>
+    <div id="stat"></div>
+    <div id="msg"></div>
+    <div class="row">
+      <button id="undo">Undo last</button>
+      <button id="auto" style="background:#2e9e4f;font-weight:700">Start auto</button>
+      <button id="cap" disabled style="flex:1">Shot</button>
+      <button id="skip">Skip</button>
+    </div>
+    <div style="margin-top:8px"><label>shots per string <input id="spi" type="number" min="1" max="20"></label>
+      <label style="margin-left:10px">settle ms <input id="settle" type="number" value="300" step="50" style="width:64px"></label>
+      <label style="margin-left:10px"><input id="bypass" type="checkbox"> ignore display-ready check</label></div>
+  </div>
+</div>
+<div id="flash"></div>
+<canvas id="c" style="display:none"></canvas>
+<script>
+const $=id=>document.getElementById(id);
+let st=null, busy=false;
+async function startCam(){
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({audio:false,
+      video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}}});
+    $('v').srcObject=s;
+  }catch(e){ $('msg').textContent='Camera error: '+e.message+' (needs HTTPS + permission)'; }
+}
+function setupOk(){ return $("setup").value.trim().length>0; }
+function ready(){ return st && setupOk() && (st.shown===st.current.id || $('bypass').checked) && !busy; }
+function ui(){
+  if(!st) return;
+  $('cur').textContent=st.current.text;
+  $('stat').textContent=`total ${st.total}/${st.target} photos · ${st.unique} strings · this string ${st.shots}/${st.shots_per_item}`+
+    (st.shown===st.current.id?'':' · waiting for display…')+
+    (pending?` · uploading ${pending}`:'')+(setupOk()?'':' · ENTER A SETUP LABEL')+
+    ' · by setup: '+Object.entries(st.by_setup||{}).map(([k,v])=>k+' '+v).join(', ');
+  const dl=$('setups'); const have=[...dl.options].map(o=>o.value);
+  Object.keys(st.by_setup||{}).forEach(k=>{ if(!have.includes(k)){ const o=document.createElement('option'); o.value=k; dl.appendChild(o);} });
+  $('cap').disabled=!ready();
+  if(document.activeElement!==$('spi')) $('spi').value=st.shots_per_item;
+}
+async function poll(){
+  try{ st=await (await fetch('/api/state')).json(); ui(); }catch(e){ $('msg').textContent='server unreachable'; }
+  setTimeout(poll,100);
+}
+// ---- pipelined capture: grab frame -> tell server (display advances at once) -> encode + upload in the background
+let pending=0, dropped=0;
+async function shoot(){
+  if(!ready()) return false;
+  busy=true;
+  const v=$('v'), c=$('c'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  const itemId=st.current.id, setup=$('setup').value.trim(), w=c.width, h=c.height;
+  const blobP=new Promise(r=>c.toBlob(r,'image/jpeg',0.92));       // snapshots the canvas now, encodes in the background
+  $('flash').style.opacity=.5; setTimeout(()=>$('flash').style.opacity=0,80);
+  let counted=false;
+  try{
+    const f=new FormData(); f.append('item_id',itemId);
+    const r=await (await fetch('/api/captured',{method:'POST',body:f})).json();
+    counted=r.counted; const {counted:_,...state}=r; st=state;
+  }catch(e){ $('msg').textContent='server unreachable'; }
+  busy=false; ui();
+  if(!counted){ dropped++; $('msg').textContent=`dropped ${dropped} frame(s): display had already changed (not saved, label would be wrong)`; return false; }
+  pending++; uploadJob(blobP,itemId,setup,w,h);                      // not awaited
+  return true;
+}
+async function uploadJob(blobP,itemId,setup,w,h){
+  const blob=await blobP; let err='';
+  for(let i=0;i<3;i++){
+    try{
+      const fd=new FormData(); fd.append('file',blob,'x.jpg'); fd.append('item_id',itemId); fd.append('setup',setup);
+      fd.append('meta',JSON.stringify({w,h,ua:navigator.userAgent}));
+      const r=await fetch('/api/upload',{method:'POST',body:fd});
+      if(!r.ok) throw new Error((await r.json()).detail||r.status);
+      pending--; failures=0; return;
+    }catch(e){ err=e.message; await new Promise(r=>setTimeout(r,500*(i+1))); }
+  }
+  pending--; failures++; $('msg').textContent='Upload FAILED after 3 tries: '+err+' (photo lost)';
+}
+$('cap').onclick=shoot;
+// ---- auto mode
+let auto=false, failures=0, seenId=null, seenAt=0, lastShot=0, wl=null;
+async function setAuto(on){
+  auto=on; failures=0;
+  $('auto').textContent=on?'Stop auto':'Start auto'; $('auto').style.background=on?'#c0392b':'#2e9e4f';
+  try{ if(on&&navigator.wakeLock) wl=await navigator.wakeLock.request('screen'); else if(wl){wl.release();wl=null;} }catch(e){}
+}
+$('auto').onclick=()=>setAuto(!auto);
+let ticking=false;
+setInterval(async()=>{
+  if(!st) return;
+  if(st.shown===st.current.id){ if(seenId!==st.current.id){seenId=st.current.id; seenAt=Date.now();} } else seenId=null;
+  if(!auto || ticking) return;
+  if(st.total>=st.target && pending===0){ setAuto(false); $('msg').textContent='Target reached - done!'; return; }
+  if(failures>=3){ setAuto(false); $('msg').textContent='Stopped: 3 uploads failed in a row'; return; }
+  if(pending>=6){ $('msg').textContent=`waiting for upload backlog (${pending})...`; return; }
+  const settle=+$('settle').value||300;
+  if(ready() && seenId===st.current.id && Date.now()-seenAt>=settle && Date.now()-lastShot>=150){
+    ticking=true; lastShot=Date.now(); await shoot(); lastShot=Date.now(); ticking=false;
+  }
+},40);
+$('skip').onclick=async()=>{ await fetch('/api/next',{method:'POST'}); };
+$('undo').onclick=async()=>{
+  const r=await fetch('/api/undo',{method:'POST'});
+  $('msg').textContent=r.ok?'removed last photo':'nothing to undo';
+};
+$('spi').onchange=async()=>{ const fd=new FormData(); fd.append('shots_per_item',$('spi').value);
+  await fetch('/api/settings',{method:'POST',body:fd}); };
+$('setup').value=localStorage.getItem('setup')||'';
+$('setup').oninput=()=>{ localStorage.setItem('setup',$('setup').value.trim()); ui(); };
+startCam(); poll();
+</script></body></html>

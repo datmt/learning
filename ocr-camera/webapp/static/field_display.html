@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>password field display</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;cursor:none}
+  #wrap{position:absolute;left:50%;top:50%;width:calc(var(--z)*560px);max-width:94vw;transform:translate(-50%,-50%)}
+  #label{font-size:calc(var(--z)*14px);margin:0 0 calc(var(--z)*6px) calc(var(--z)*6px);opacity:.75}
+  #field{display:flex;align-items:center;box-sizing:border-box;height:calc(var(--z)*52px);padding:0 calc(var(--z)*18px);border:calc(var(--z)*1.5px) solid;overflow:hidden}
+  #txt{flex:1;white-space:pre;overflow:hidden}
+  #bd{margin-left:calc(var(--z)*10px);font:600 calc(var(--z)*12px) system-ui,sans-serif;padding:calc(var(--z)*4px) calc(var(--z)*10px);border-radius:999px;color:#fff;white-space:nowrap}
+  #eye{margin-left:calc(var(--z)*10px);width:calc(var(--z)*22px);height:calc(var(--z)*22px);opacity:.7}
+  #hint{position:fixed;left:0;right:0;bottom:6px;text-align:center;font:14px sans-serif;color:#888;cursor:default}
+</style></head><body>
+<div id="wrap"><div id="label">Password</div>
+  <div id="field"><div id="txt"></div><div id="bd" hidden></div>
+  <svg id="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" hidden><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div></div>
+<div id="hint">click for fullscreen · + / - changes size · the phone page's "Next string" button advances</div>
+<script>
+const $=id=>document.getElementById(id);
+let Z=parseFloat(new URLSearchParams(location.search).get('z')||localStorage.fieldZoom||'1.4');
+function setZ(z){ Z=Math.min(4,Math.max(.5,z)); localStorage.fieldZoom=Z; document.documentElement.style.setProperty('--z',Z); }
+setZ(Z);
+addEventListener('keydown',e=>{ if(e.key==='+'||e.key==='=') setZ(Z*1.1); if(e.key==='-') setZ(Z/1.1); if(e.key===' '||e.key==='n') fetch('/api/field/next',{method:'POST'}); });
+document.body.addEventListener('click',()=>{ document.documentElement.requestFullscreen?.(); $('hint').style.display='none'; });
+let shown=null;
+function render(it){
+  const s=it.style, f=$('field'), b=$('bd'), e=$('eye');
+  document.body.style.background=s.page; f.style.background=s.box; f.style.borderColor=s.border; f.style.color=s.fg;
+  f.style.borderRadius=s.radius==='pill'?'999px':s.radius; $('txt').style.fontFamily=s.font; $('txt').style.fontSize='calc(var(--z)*'+(20*s.size)+'px)';
+  $('label').style.display=s.label?'block':'none'; $('label').style.color=s.fg;
+  $('wrap').style.transform=`translate(calc(-50% + ${s.x}vw), calc(-50% + ${s.y}vh))`;
+  $('txt').textContent=it.text;
+  b.hidden=!(s.badge==='strong'||s.badge==='weak'); b.textContent=s.badge==='weak'?'Weak':'Very strong'; b.style.background=s.badge==='weak'?'#d93025':'#2e9e3e';
+  e.hidden=s.badge!=='eye'; e.style.color=s.fg;
+}
+async function poll(){
+  try{ const st=await (await fetch('/api/field/state?full=1')).json(); if(st.id!==shown){ shown=st.id; render(st); await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); const fd=new FormData(); fd.append('id',st.id); await fetch('/api/field/shown',{method:'POST',body:fd}); } }catch(e){}
+  setTimeout(poll,80);
+}
+poll();
+</script></body></html>

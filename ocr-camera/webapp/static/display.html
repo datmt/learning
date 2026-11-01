@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>display</title>
+<style>
+  html,body{margin:0;height:100%;background:#808080;overflow:hidden;cursor:none}
+  #wrap{position:absolute;inset:0;overflow:hidden}
+  #stage{position:absolute;left:50%;top:50%}                 /* size, position and marker size are set from JS (pixels) */
+  #box{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #t{white-space:pre;line-height:1.2}
+  .m{position:absolute;background:#000;transform:translate(-50%,-50%)}
+  #hint{position:fixed;left:0;right:0;bottom:6px;text-align:center;font:14px sans-serif;color:#222;cursor:default}
+</style></head><body>
+<div id="wrap"><div id="stage"><div id="box"><div id="t"></div></div>
+<div class="m" id="m1"></div><div class="m" id="m2"></div><div class="m" id="m3"></div><div class="m" id="m4"></div></div></div>
+<div id="hint">click anywhere for fullscreen (this hint disappears)</div>
+<script>
+const box=document.getElementById('box'), t=document.getElementById('t'), stage=document.getElementById('stage');
+// Panel is 3.1:1. BASE = panel width as a fraction of the window width at pose.scale=1 (override: /display?w=0.3). Corner squares are 0.105 x panel height, as before.
+const BASE=parseFloat(new URLSearchParams(location.search).get('w')||'0.34');
+let PW=0;
+function layout(){
+  PW=Math.round(innerWidth*BASE); const PH=Math.round(PW/3.1), m=Math.round(0.105*PH), ring=Math.max(2,Math.round(0.26*m));
+  stage.style.width=PW+'px'; stage.style.height=PH+'px';
+  [['m1',0,0],['m2',1,0],['m3',0,1],['m4',1,1]].forEach(([id,x,y])=>{
+    const e=document.getElementById(id);
+    e.style.width=e.style.height=m+'px'; e.style.outline=ring+'px solid #fff';
+    e.style.left=(x?PW+m:-m)+'px'; e.style.top=(y?PH+m:-m)+'px';
+  });
+}
+layout(); addEventListener('resize',layout);
+let shownId=null, loaded={};
+async function render(item){
+  const s=item.style;
+  if(!loaded[s.font]){
+    const ff=new FontFace('f'+s.font,`url(/fonts/${s.font})`);
+    await ff.load(); document.fonts.add(ff); loaded[s.font]=true;
+  }
+  const P=s.pose, st_=document.getElementById('stage');
+  st_.style.transform=`translate(-50%,-50%) translate(${P.dx}vw,${P.dy}vh) scale(${P.scale})`;
+  box.style.background=s.bg; t.style.color=s.fg;
+  t.style.fontFamily=`'f${s.font}', monospace`;
+  t.style.letterSpacing=s.spacing+'em';
+  t.style.transform=`rotate(${s.rotate}deg)`;
+  t.textContent=item.text;
+  // fit width, but never bigger than 13% of the panel width (so short strings are not blown up), then scale by style.size
+  t.style.fontSize='100px';
+  const maxW=box.clientWidth*0.9, maxH=box.clientHeight*0.8;
+  let px=100*maxW/(t.scrollWidth||1);
+  px=Math.min(px, maxH/1.2, 0.13*box.clientWidth);
+  t.style.fontSize=(px*s.size)+'px';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  await new Promise(r=>setTimeout(r,60));
+}
+async function poll(){
+  try{
+    const st=await (await fetch('/api/state')).json();
+    if(st.current.id!==shownId){
+      shownId=st.current.id;
+      await render(st.current);
+      const fd=new FormData(); fd.append('item_id',st.current.id);
+      await fetch('/api/shown',{method:'POST',body:fd});
+    }
+  }catch(e){}
+  setTimeout(poll,80);
+}
+document.body.addEventListener('click',()=>{document.documentElement.requestFullscreen?.();
+  document.getElementById('hint').style.display='none';});
+poll();
+</script></body></html>

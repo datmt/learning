@@ -1,0 +1,115 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Password OCR test</title>
+<style>
+body{margin:0;background:#111;color:#eee;font:15px system-ui,sans-serif}
+#stage{position:relative;background:#000}
+video{width:100%;max-height:55vh;display:block;object-fit:contain}
+#box{position:absolute;border:2px solid #4f8;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none}
+#bar{padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font-size:18px;padding:10px 16px;border-radius:8px;border:0;background:#2a7;color:#fff}
+button.sec{background:#445}
+select,input[type=range]{font-size:15px}
+#res{padding:8px 12px}
+#text{white-space:pre-wrap;font:26px ui-monospace,monospace;word-break:break-all;background:#222;padding:10px;border-radius:8px;min-height:1.4em}
+#text span.lo{background:#a52;border-radius:3px}
+#seen{width:100%;max-width:640px;display:block;margin-top:8px;border-radius:6px}
+#meta{color:#999;font-size:13px;margin-top:4px}
+</style></head><body>
+<div id="stage"><video id="v" autoplay playsinline muted></video><div id="box"></div></div>
+<div id="bar">
+  <button id="shoot">Read</button>
+  <label><input type="file" id="file" accept="image/*" hidden><button class="sec" onclick="file.click()">Upload photo</button></label>
+  <select id="mode"><option value="guide">Guide box (frame the text inside)</option><option value="markers">Corner-marker panel (collection display)</option><option value="whole">Whole image is the text</option></select>
+  <label>box width <input type="range" id="bw" min="30" max="100" value="90"></label>
+  <label><input type="checkbox" id="save" checked> save for review</label>
+  <label><input type="checkbox" id="tta" checked> tilt-robust (9 angles, vote)</label>
+  <label><input type="checkbox" id="lines"> multi-line (read each text line separately)</label>
+  <label><input type="checkbox" id="useField" checked> label from /display</label> <button class="sec" id="next" style="font-size:15px;padding:6px 12px">Next string</button> <select id="fmode"><option value="random">display: light/dark random</option><option value="dark">display: dark only</option><option value="light">display: light only</option></select> <span id="fstat" style="color:#999;font-size:13px"></span>
+  <div style="width:100%"><button id="auto">▶ Auto-capture</button> settle <input id="settle" type="number" value="350" min="100" step="50" style="width:64px;font-size:15px"> ms · shots per string <input id="per" type="number" value="1" min="1" max="6" style="width:44px;font-size:15px"> <span id="astat" style="color:#9c9;font-size:13px"></span></div>
+</div>
+<div id="res"><div id="text">–</div><div id="meta"></div><div id="lab" hidden style="margin-top:8px"><input id="truth" placeholder="what it really says (optional)" style="font:16px ui-monospace,monospace;width:60%"> <button class="sec" id="savelab" style="font-size:15px;padding:6px 12px">Save label</button> <span id="labmsg"></span></div><img id="seen" hidden></div>
+<script>
+const $=id=>document.getElementById(id), v=$('v'), box=$('box'), ASPECT=3.1;
+let busy=false, lastId='', fieldId='';
+async function pollField(){ try{ const s=await (await fetch('/api/field/state')).json(); fieldId=s.id; if(document.activeElement!==$('fmode')) $('fmode').value=s.mode; $('fstat').textContent='display string '+s.id+' · reads so far: '+s.reads; }catch(e){ $('fstat').textContent='display offline'; } setTimeout(pollField,700); }
+$('next').onclick=async()=>{ await fetch('/api/field/next',{method:'POST'}); $('text').textContent='–'; $('meta').textContent='new string on /display'; $('seen').hidden=true; $('lab').hidden=true; };
+$('fmode').onchange=async()=>{ const fd=new FormData(); fd.append('mode',$('fmode').value); await fetch('/api/field/mode',{method:'POST',body:fd}); };
+pollField();
+async function start(){
+  try{ v.srcObject=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}}}); }
+  catch(e){ $('meta').textContent='Camera unavailable ('+e.message+') - use Upload photo'; }
+}
+function dispRect(){ // where the video image really is inside the <video> element (object-fit: contain)
+  const r=v.getBoundingClientRect(), s=Math.min(r.width/v.videoWidth, r.height/v.videoHeight)||1;
+  const w=v.videoWidth*s, h=v.videoHeight*s; return {x:(r.width-w)/2, y:(r.height-h)/2, w, h, s};
+}
+function layout(){
+  if(!v.videoWidth){ return; }
+  const d=dispRect(); let bw=d.w*$('bw').value/100, bh=bw/ASPECT; if(bh>d.h){bh=d.h; bw=bh*ASPECT;}
+  Object.assign(box.style,{left:(d.x+(d.w-bw)/2)+'px',top:(d.y+(d.h-bh)/2)+'px',width:bw+'px',height:bh+'px',display:$('mode').value==='guide'?'block':'none'});
+}
+['loadedmetadata','resize'].forEach(e=>v.addEventListener(e,layout)); window.addEventListener('resize',layout);
+$('bw').oninput=layout; $('mode').onchange=layout;
+function guideCanvas(){
+  const d=dispRect(), bw=d.w*$('bw').value/100; let w=bw/d.s, h=w/ASPECT; if(h>v.videoHeight){h=v.videoHeight; w=h*ASPECT;}
+  const x=(v.videoWidth-w)/2, y=(v.videoHeight-h)/2, c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h);
+  c.getContext('2d').drawImage(v,x,y,w,h,0,0,c.width,c.height); return c;
+}
+function guideBlob(){ return new Promise(r=>guideCanvas().toBlob(r,'image/png')); }
+function fullCanvas(){ const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); return c; }
+function fullBlob(){ return new Promise(r=>fullCanvas().toBlob(r,'image/jpeg',.92)); }
+async function send(blob, mode){
+  busy=true; $('shoot').disabled=true; $('meta').textContent='reading…';
+  const fd=new FormData(); fd.append('file',blob,'x'); fd.append('mode',mode); fd.append('save',$('save').checked?'1':'0'); fd.append('tta',$('tta').checked?'1':'0'); fd.append('lines',$('lines').checked?'1':'0'); if($('useField').checked && fieldId) fd.append('field_id',fieldId);
+  try{
+    const j=await (await fetch('/api/read',{method:'POST',body:fd})).json();
+    if(j.error){ $('text').textContent='–'; $('meta').textContent=j.error; $('seen').hidden=true; return; }
+    $('text').innerHTML=[...j.text].map((c,i)=>`<span class="${j.conf[i]<0.8?'lo':''}">${c.replace('&','&amp;').replace('<','&lt;')}</span>`).join('')||'(nothing read)';
+    $('meta').textContent=`${j.text.length} chars · ${j.agree[1]>1?('agreement '+j.agree[0]+'/'+j.agree[1]+' angles · '):''}model ${j.model_ms} ms · total ${j.total_ms} ms · orange = low confidence (<80%) · image below is what the model saw`;
+    $('seen').src=j.seen; $('seen').hidden=false; lastId=j.id; $('truth').value=''; $('labmsg').textContent=''; $('lab').hidden=!j.id||j.truth!==null;
+    if(j.truth!==null){ const tr=j.truth; $('meta').textContent+=` · expected ${tr} → ${j.correct?'CORRECT':'WRONG'} (read ${j.n_reads} of this string)`; $('text').style.outline='3px solid '+(j.correct?'#2a7':'#c33'); } else $('text').style.outline='none';
+  }catch(e){ $('meta').textContent='request failed: '+e.message; }
+  finally{ busy=false; $('shoot').disabled=false; }
+}
+$('shoot').onclick=async()=>{ if(busy||!v.videoWidth) return; const m=$('mode').value; await send(m==='guide'?await guideBlob():await fullBlob(), m==='guide'?'whole':m); };
+$('file').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const m=$('mode').value; await send(f, m==='guide'?'whole':m); e.target.value=''; };
+$('savelab').onclick=async()=>{ if(!lastId) return; const fd=new FormData(); fd.append('id',lastId); fd.append('truth',$('truth').value);
+  const j=await (await fetch('/api/label',{method:'POST',body:fd})).json(); $('labmsg').textContent=j.ok?(j.correct?'saved - model was right':'saved - model was wrong'):(j.error||'failed'); };
+// ---------------- auto-capture: shoot as soon as /display shows a new string, advance the display at once, read + save in the background
+let auto=false, inflight=0, shotFor='', shownAt=0, shotsDone=0, lastShot=0; const AS={n:0,ok:0,bad:0,err:0};
+function autoStat(msg){ $('astat').textContent=`${AS.n} shots · ${AS.ok} correct · ${AS.bad} wrong`+(AS.err?` · ${AS.err} errors`:'')+` · in flight ${inflight}`+(msg?' · '+msg:''); }
+$('auto').onclick=()=>{ auto=!auto; $('auto').textContent=auto?'■ Stop auto':'▶ Auto-capture'; $('auto').style.background=auto?'#c33':'#2a7';
+  if(auto){ shotFor=''; autoStat($('save').checked?'':'WARNING: "save for review" is OFF - nothing is stored'); autoTick(); } else autoStat('stopped'); };
+async function autoRead(canvas, mode, id){
+  inflight++; autoStat();
+  try{
+    const blob=await new Promise(r=>canvas.toBlob(r, mode==='whole'?'image/png':'image/jpeg', .92));
+    const fd=new FormData(); fd.append('file',blob,'x'); fd.append('mode',mode); fd.append('save',$('save').checked?'1':'0'); fd.append('tta',$('tta').checked?'1':'0'); fd.append('lines',$('lines').checked?'1':'0'); fd.append('field_id',id);
+    const j=await (await fetch('/api/read',{method:'POST',body:fd})).json();
+    if(j.error){ AS.err++; $('meta').textContent=j.error; }
+    else{
+      AS.ok+=j.correct?1:0; AS.bad+=j.correct?0:1;
+      $('text').textContent=j.text||'(nothing read)'; $('text').style.outline='3px solid '+(j.correct?'#2a7':'#c33');
+      $('meta').textContent=`expected ${j.truth} → ${j.correct?'CORRECT':'WRONG'} · model ${j.model_ms} ms`; $('seen').src=j.seen; $('seen').hidden=false; $('lab').hidden=true;
+    }
+  }catch(e){ AS.err++; }
+  finally{ inflight--; autoStat(); }
+}
+async function autoTick(){
+  if(!auto) return;
+  try{
+    const s=await (await fetch('/api/field/state')).json(); fieldId=s.id; const now=Date.now();
+    if(s.id!==shotFor){ shotFor=s.id; shownAt=0; shotsDone=0; lastShot=0; }
+    if(s.shown===s.id && !shownAt) shownAt=now;                                  // display says: the string is on screen now
+    const per=Math.max(1,+$('per').value||1), settle=Math.max(100,+$('settle').value||350);
+    if(shownAt && now-shownAt>=settle && shotsDone<per && now-lastShot>=(shotsDone?1200:0) && inflight<3 && v.videoWidth){
+      const m=$('mode').value, canvas=m==='guide'?guideCanvas():fullCanvas();    // grab the frame first ...
+      shotsDone++; lastShot=now; AS.n++;
+      if(shotsDone>=per) fetch('/api/field/next',{method:'POST'});               // ... then advance the display immediately
+      autoRead(canvas, m==='guide'?'whole':m, s.id);
+    }
+  }catch(e){ autoStat('server unreachable'); }
+  setTimeout(autoTick,80);
+}
+start();
+</script></body></html>

@@ -1,0 +1,6 @@
+data/
+certs/
+*.log
+__pycache__/
+.venv/
+deploy/pylib/

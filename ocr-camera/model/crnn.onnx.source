@@ -1,0 +1,1 @@
+data/crnn_final_synthetic.pt, trained with train.ipynb (synthetic + real), exported by export_onnx.py
