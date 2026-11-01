@@ -4,3 +4,10 @@ certs/
 __pycache__/
 .venv/
 deploy/pylib/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example

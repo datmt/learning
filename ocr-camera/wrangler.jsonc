@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ocr-camera",
+  "routes": [{ "pattern": "ocr.datmt.com", "custom_domain": true }],
+  "compatibility_date": "2026-10-23",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "static-app"
+  }
+}
