@@ -32,14 +32,78 @@ For comparison, the first version of the model scored 13% exact on my first 15 p
 - The model has seen about 80% of the phone strings in training; only the test split is held out. A different screen or phone has not been tested.
 - Dark mode was the weak spot of the first model. I did not score dark and light separately for this one.
 
-## Approach
+## The setup, step by step
 
-1. **Collect.** `webapp/server.py` (the collection page) shows a random string with four corner markers; `crop.py` finds the markers and flattens the panel into a text crop. About 1000 photos gave 956 crops. A second page (`/display` on the reader app, `webapp/static/field_display.html`) shows a password field with random fonts, light or dark mode, and auto-capture on the phone labels each photo for free: about 1,430 photos.
-2. **Split by string.** 80/10/10 train/val/test, so a test string never appears in training.
-3. **Synthetic pretraining.** The generator in `train.ipynb` draws random strings in many fonts on a field or panel, with moiré, blur, glow, lifted blacks, small rotations and resolution loss. Synthetic plus real training beat real-only by about 23 points on the same split in an earlier run, so it stays.
-4. **Model.** 6-layer CNN, then 2-layer bidirectional LSTM, then CTC. Input is 80x384 grey, 16.6 MB as fp32. It runs through ONNX Runtime on CPU (about 78 ms per read on one thread; an int8 version is 7.6 MB and 38 ms, see `bench_quant.py`).
-5. **Compare** against RapidOCR on the same crops (`eval_rapidocr.py`).
-6. **Serve.** `webapp/reader_server.py` reads a guide-box crop from the phone camera, optionally votes over 9 tilts, and can save reads for later review.
+**The problem.** A phone photographs a screen showing a password. We want the text back as a string. A password is hard for OCR: it is random (no words to guess from), it mixes 94 characters that look alike (`l I | 1`, `0 O`, `' \``), and the photo has glare, blur and moiré (the wavy pattern you get when a camera photographs a screen).
+
+**The idea.** Treat it as "image in, string out" and train one small neural network for exactly this job, instead of using a general OCR engine. RapidOCR, a general engine, got 37% of strings fully right on the same test photos. A specialised model can do better because it only has to handle one kind of image.
+
+```mermaid
+flowchart LR
+    A[Phone photo of the screen] --> B[Guide box crop<br/>text line only]
+    B --> C[Grey, resize to 80x384,<br/>normalise]
+    C --> D[CNN<br/>looks at the pixels]
+    D --> E[BiLSTM<br/>reads left to right and back]
+    E --> F[96 steps x 95 scores]
+    F --> G[CTC decoding]
+    G --> H["Text, e.g. 'w7DlzVe$'"]
+```
+
+### 1. What goes in
+- One **grey image, 80 pixels high and 384 wide**. The crop is resized in two steps (to 768x247, then 384x80) so thin strokes survive, then each image is standardised (subtract its own mean, divide by its own spread). That makes dark and light screens look alike to the network.
+- Pixel values only. The network is never told the font, the screen or the string.
+
+### 2. The network (4.1 million numbers to learn)
+
+| Part | Layers | What it does | Output shape |
+|---|---|---|---|
+| Input | | grey image | 1 x 80 x 384 |
+| CNN | 6 convolution layers (32, 64, 128, 128, 256, 256 filters), each with batch-norm and ReLU, and 3 max-pool steps that halve the size | finds strokes, then corners and curves, then whole characters. Height shrinks 80 to 5; width shrinks 384 to 96 (so 96 columns, each about 4 pixels wide) | 256 x 5 x 96 |
+| Projection | 1 linear layer | squeezes each column's 256x5 numbers into 256 | 96 x 256 |
+| BiLSTM | 2 layers, 256 units each way | reads the 96 columns left to right and right to left, so each column knows what is around it (is this stroke the top of an `l` or an `I`? it depends on the neighbours) | 96 x 512 |
+| Output | 1 linear layer | for each column, a score for each of the 95 classes: 94 characters plus a "blank" | 96 x 95 |
+
+That is about 1.1 M parameters in the CNN, 2.6 M in the LSTM, the rest in the linear layers. The model file is 16.6 MB.
+
+### 3. What comes out, and why CTC
+The network does not output "character 5 is `D`". We do not know where each character sits, and the width of letters varies. Instead it gives 96 guesses, one per image column, and **CTC** (Connectionist Temporal Classification) turns them into a string by two rules: merge repeated guesses, then drop the blanks.
+
+```
+column guesses:  _ _ w w _ 7 7 _ D _ l l _ z _ V V e _ $ _ ...
+merge repeats:   _ w _ 7 _ D _ l _ z _ V e _ $ _
+drop blanks:     w 7 D l z V e $
+```
+The blank is what lets the model write a double letter (`l`, blank, `l`) as `ll`. CTC training needs only the image and the final string, with no per-letter boxes, which is why labelling photos was cheap. Each emitted letter also comes with a probability, which the reader page shows in orange when below 80%.
+
+### 4. What goes into training
+
+| Data | Count | Where it comes from | Used for |
+|---|---|---|---|
+| Real photos of the collection page | 956 crops | `webapp/server.py` shows a random string with 4 corner squares; `crop.py` finds them and flattens the page | train / val / test |
+| Real phone photos of the password-field page | about 1,430 | `/display` on the reader app, with auto-capture; the label is known because the page chose the string | train / val / test |
+| Synthetic images | made fresh each epoch | the generator in `train.ipynb` | train only |
+
+- **Split by string, 80 / 10 / 10.** The same string never appears in both train and test. Splitting by photo would let the model memorise strings and look better than it is.
+- **Why synthetic data at all.** About 1,900 real training crops are few. The generator can make unlimited random strings in many fonts. It draws them on a light or dark field with moiré, blur (Gaussian, motion and defocus), glow around bright text, lifted blacks, small rotations and lower resolution, all things the phone photos show. Training on both beat real photos alone by about 23 points in an earlier test.
+- **Why random strings, not words.** The model must read exactly what is on the screen, not guess from language. A character-by-character model that never sees real words cannot "autocorrect".
+- **Why a small tilt is trained in.** A crop can be a few degrees off. Rotating training images by up to 10 degrees keeps accuracy near 75% at 8 degrees; the earlier model fell to 6% at 10.
+
+### 5. How it is trained
+
+| | Stage 1: pretrain | Stage 2: fine-tune |
+|---|---|---|
+| Data | synthetic only, 40,000 fresh images per epoch | real training crops repeated 8 times (with light changes) plus 8,000 fresh synthetic images |
+| Epochs | 20 | 30 |
+| Learning rate | 0.001 | 0.0005 |
+| Why | learn what letters look like from unlimited data | adapt to real camera look |
+
+Common to both: CTC loss, AdamW optimiser (weight decay 0.01), a one-cycle learning-rate schedule, gradient clipping at 5, batch size 64. After every epoch it scores the **validation** photos and keeps the best checkpoint; the test photos are used once, at the end. The whole run took about 1 hour 50 minutes on a shared GPU.
+
+### 6. Reading in the app
+`webapp/reader_server.py` runs the exported ONNX model on CPU. Options on the page:
+- **Tilt-robust (default):** reads the crop at 9 angles from -8 to +8 degrees and picks the string most of the angles agree on (ties go to the higher confidence). This lifts exact match from 81.1% to 84.1% and makes tilt matter much less.
+- **Multi-line:** splits the crop into text lines and reads each; see the limits above.
+- **Save for review:** keeps the crop and the result so reads can be labelled and used later.
 
 ## Files
 
