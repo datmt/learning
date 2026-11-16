@@ -25,26 +25,24 @@ With a proxy: Your request goes through a US server, which Netflix sees as domes
 ### Scenario: Privacy
 
 ```mermaid
-graph LR
-    subgraph "What YOUR ISP can see"
-        A[You]
-        B[Your ISP]
+graph TB
+    subgraph "What YOUR ISP sees — direct connection"
+        A[You] -->|plaintext: URL, headers, body visible| B[Your ISP] -->|"full request"| W1[Website]
+        W1 -->|"full response"| B --> A
     end
-    subgraph "The Proxy's Network (your ISP cannot see)"
-        D[Proxy Server]
-        C[Website]
+
+    subgraph "What YOUR ISP sees — via proxy"
+        A2[You] -->|"only encrypted bytes to proxy IP"| B2[Your ISP] -->|"proxy's IP, nothing else"| W2[Website]
+        W2 -.->|"encrypted proxy traffic, your identity hidden"| B2
     end
-    
-    A -->|direct: full request visible| B --> C
-    A -.->|encrypted connection| D -.-> C
     
     style B fill:#ffcccc
-    style D fill:#ccffcc
+    style B2 fill:#69db7c
 ```
 
-Without proxy: Your ISP sees your request → their network → the website. Everything is visible to your ISP.
+Without proxy: Your ISP sees every detail — the URL you visit, headers, body content. They log it all.
 
-With proxy: Your ISP only sees an encrypted connection to the Proxy Server. The path from the proxy to the website happens on a completely different network — your ISP has no visibility into it.
+With proxy: Your ISP only sees encrypted traffic going to the proxy server's IP. The proxy talks to the website on your behalf, and by the time data reaches the website, it shows the proxy's IP address — not yours.
 
 ---
 
