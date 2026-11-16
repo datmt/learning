@@ -248,10 +248,10 @@ sequenceDiagram
     R-->>D: DNS response
     D->>T: Write response back to TUN device
     T->>K: Kernel delivers to app
-    K->>A: Response as if it came from 8.8.8.8
+    K->>A: Response arrives in app's socket buffer
 ```
 
-The app never actually contacts `8.8.8.8`. It thinks the DNS response came from there, but sing-box handled it entirely locally.
+The app sent a DNS query to 8.8.8.8 but never left its own network namespace — sing-box intercepted the packet at the TUN interface, processed it through DNS rules (FakeIP/DoH/etc.), and wrote the response back. The app receives the answer without ever touching the real 8.8.8.8 server.
 
 ### See It in Action
 

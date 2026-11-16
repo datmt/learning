@@ -26,16 +26,25 @@ With a proxy: Your request goes through a US server, which Netflix sees as domes
 
 ```mermaid
 graph LR
-    A[You] -->|direct| B[Your ISP] --> C[Website]
-    A -.->|via proxy| D[Proxy Server] --> B
-    D --> C
+    subgraph "What YOUR ISP can see"
+        A[You]
+        B[Your ISP]
+    end
+    subgraph "The Proxy's Network (your ISP cannot see)"
+        D[Proxy Server]
+        C[Website]
+    end
+    
+    A -->|direct: full request visible| B --> C
+    A -.->|encrypted connection| D -.-> C
     
     style B fill:#ffcccc
     style D fill:#ccffcc
 ```
 
-Without proxy: Your ISP sees every website you visit.
-With proxy: Your ISP only sees you connecting to the proxy. The final destination is hidden.
+Without proxy: Your ISP sees your request → their network → the website. Everything is visible to your ISP.
+
+With proxy: Your ISP only sees an encrypted connection to the Proxy Server. The path from the proxy to the website happens on a completely different network — your ISP has no visibility into it.
 
 ---
 
@@ -392,23 +401,24 @@ graph LR
 ```mermaid
 sequenceDiagram
     participant You as You
-    participant FW as Corporate Firewall
-    participant CDN as Cloudflare CDN
+    participant FW as Corporate<br/>Firewall
+    participant CDN as Cloudflare CDN<br/>(whitelisted)
     participant S as Server
-    
-    Note over FW: Blocks port 443 to non-whitelisted IPs
-    You->>FW: Connect to server:443 → BLOCKED!
-    
-    Note over CDN: Cloudflare is whitelisted
-    You->>CDN: WebSocket to cloudfront.net:443 → ALLOWED
-    CDN->>S: Forward the request internally
+
+    Note over You,FW: Path 1 — direct connection is blocked
+    You->>FW: TCP to server:443
+    FW--xYou: BLOCKED (IP not allowed)
+
+    Note over You,CDN: Path 2 — wrap traffic inside whitelisted protocol
+    You->>CDN: WebSocket to cloudfront.net:443
+    CDN->>S: Forward request internally
     S-->>CDN: Response
     CDN-->>You: WebSocket frame
-    
-    Note right of FW: Firewall sees "normal Cloudflare traffic"
+
+    Note over FW,You: Firewall only sees "legit Cloudflare WebSocket traffic"
 ```
 
-This is why sing-box supports multiple transports — **different environments block different things**.
+This is why sing-box supports multiple transports — **different environments block different things**. A corporate firewall blocks port 443 to unknown IPs, but can't block Cloudflare. Wrapping your proxy inside a CDN-visible protocol bypasses the restriction entirely.
 
 ---
 

@@ -38,7 +38,7 @@ graph LR
         E[HTTPS Server : 443]
         F[SSH Server : 22]
     end
-    A -->|TCP to 93.168.216.34:80| D
+    A -->|TCP to 93.184.216.34:80| D
     B -->|TCP to 93.184.216.34:443| E
     C -->|TCP to 93.184.216.34:22| F
 ```
@@ -110,7 +110,7 @@ sequenceDiagram
     C->>S: "Packet 1" (hop, hop, hope)
     C->>S: "Packet 2" (might arrive out of order)
     C->>S: "Packet 3" (might get lost entirely)
-    S--x: "I got 1 and 3, where's 2?" (UDP doesn't ask)
+    Note over S: *illustration only —<br/>UDP has no concept<br/>of sequence or tracking*
 ```
 
 ### UDP Demo — DNS Queries
