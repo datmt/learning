@@ -1,0 +1,13 @@
+from typing import Any, Protocol
+
+
+class Model(Protocol):
+    def get_name(self) -> str: ...
+
+    def load(self) -> None: ...
+
+    def predict(self, request: Any) -> dict:
+        """Return {"output": ..., "metrics": {...}}."""
+        ...
+
+    def unload(self) -> None: ...
